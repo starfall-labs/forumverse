@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { Thread, User } from '@/lib/types';
@@ -16,9 +17,12 @@ export function ThreadView({ thread }: ThreadViewProps) {
     await voteThreadAction(itemId, type);
   };
 
-  const authorDisplay = (author: User) => {
+  const getPrimaryAuthorName = (author: User): string => {
     return author.displayName || author.username;
   };
+  
+  const primaryAuthorName = getPrimaryAuthorName(thread.author);
+  const authorUsername = thread.author.username;
 
   return (
     <div className="flex">
@@ -33,7 +37,7 @@ export function ThreadView({ thread }: ThreadViewProps) {
       <article className="p-6 flex-grow">
         <div className="mb-3 text-sm text-muted-foreground flex items-center space-x-2">
           <UserAvatar user={thread.author} className="h-6 w-6" />
-          <span>Posted by {authorDisplay(thread.author)} (u/{thread.author.username})</span>
+          <span>Posted by {primaryAuthorName} (u/{authorUsername})</span>
           <span>•</span>
           <time dateTime={thread.createdAt}>
             {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}

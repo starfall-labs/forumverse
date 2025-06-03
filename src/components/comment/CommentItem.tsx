@@ -27,10 +27,12 @@ export function CommentItem({ comment, threadId, depth = 0 }: CommentItemProps) 
 
   const cardPaddingLeft = depth > 0 ? `pl-${2 + depth * 4}` : 'pl-2';
 
-  const authorDisplay = (author: User) => {
+  const getPrimaryAuthorName = (author: User): string => {
     return author.displayName || author.username;
   };
 
+  const primaryAuthorName = getPrimaryAuthorName(comment.author);
+  const authorUsername = comment.author.username;
 
   return (
     <Card className={`overflow-hidden shadow-sm ${depth > 0 ? 'ml-4 md:ml-8 border-l-2' : ''}`}>
@@ -48,7 +50,7 @@ export function CommentItem({ comment, threadId, depth = 0 }: CommentItemProps) 
         <div className={`flex-grow ${cardPaddingLeft} pr-2 py-2`}>
             <div className="flex items-center space-x-2 mb-1">
               <UserAvatar user={comment.author} className="h-5 w-5" />
-              <span className="text-xs font-medium">{authorDisplay(comment.author)} (u/{comment.author.username})</span>
+              <span className="text-xs font-medium">{primaryAuthorName} (u/{authorUsername})</span>
               <span className="text-xs text-muted-foreground">•</span>
               <time dateTime={comment.createdAt} className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}

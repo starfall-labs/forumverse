@@ -19,7 +19,8 @@ export function ThreadItem({ thread }: ThreadItemProps) {
     await voteThreadAction(itemId, type);
   };
 
-  const authorDisplay = thread.author.displayName || thread.author.username;
+  const primaryAuthorName = thread.author.displayName || thread.author.username;
+  const authorUsername = thread.author.username;
 
   return (
     <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200">
@@ -36,7 +37,7 @@ export function ThreadItem({ thread }: ThreadItemProps) {
           <CardHeader className="pb-2 pt-4 px-4">
             <div className="text-xs text-muted-foreground flex items-center space-x-2">
               <UserAvatar user={thread.author} className="h-5 w-5" />
-              <span>Posted by {authorDisplay} (u/{thread.author.username})</span>
+              <span>Posted by {primaryAuthorName} (u/{authorUsername})</span>
               <span>•</span>
               <time dateTime={thread.createdAt}>
                 {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}
