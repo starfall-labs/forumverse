@@ -22,7 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 
 export default function HomePage() {
-  const { t, currentLanguage } = useTranslation();
+  const { t } = useTranslation();
   const [allThreads, setAllThreads] = useState<Thread[]>([]); // Store all fetched threads
   const [threads, setThreads] = useState<Thread[]>([]); // Store sorted/displayed threads
   const [isLoading, setIsLoading] = useState(true);
@@ -56,7 +56,17 @@ export default function HomePage() {
     }
   }, [allThreads, sortOrder, isLoading]);
   
-  const pageTitleKey = `homePage.popularThreads.${currentLanguage}`;
+  const getPageTitle = () => {
+    switch (sortOrder) {
+      case 'newest':
+        return t('home.newestThreads', 'Newest Threads');
+      case 'oldest':
+        return t('home.oldestThreads', 'Oldest Threads');
+      case 'popular':
+      default:
+        return t('home.popularThreads', 'Popular Threads');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -86,7 +96,7 @@ export default function HomePage() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
-        <h1 className="text-3xl font-bold font-headline" key={pageTitleKey}>{t('home.popularThreads', 'Popular Threads')}</h1>
+        <h1 className="text-3xl font-bold font-headline">{getPageTitle()}</h1>
         <div className="flex items-center space-x-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

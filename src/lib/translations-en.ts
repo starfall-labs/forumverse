@@ -13,6 +13,8 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'navbar.accountSettings': 'Account Settings',
 
   'home.popularThreads': 'Popular Threads',
+  'home.newestThreads': 'Newest Threads',
+  'home.oldestThreads': 'Oldest Threads',
   'home.createThreadButton': 'Create New Thread',
   'home.loadingThreads': 'Loading threads...',
   'home.noThreads': 'No threads yet.',

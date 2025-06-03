@@ -16,6 +16,8 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
 
 
   'home.popularThreads': 'Chủ đề Nổi bật',
+  'home.newestThreads': 'Chủ đề Mới nhất',
+  'home.oldestThreads': 'Chủ đề Cũ nhất',
   'home.createThreadButton': 'Tạo Chủ đề Mới',
   'home.loadingThreads': 'Đang tải chủ đề...',
   'home.noThreads': 'Chưa có chủ đề nào.',
