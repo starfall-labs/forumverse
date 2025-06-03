@@ -120,6 +120,16 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'toast.profileUpdateFailedDescription': 'Could not update your profile.',
   'toast.noChangesTitle': 'No Changes',
   'toast.noChangesDescription': "You haven't made any changes to save.",
+  'toast.passwordChangedTitle': 'Password Changed',
+  'toast.passwordChangedDescription': 'Your password has been successfully updated.',
+  'toast.passwordChangeFailedDescription': 'Could not change your password.',
+  'toast.emailChangedTitle': 'Email Changed',
+  'toast.emailChangedDescription': 'Your email has been successfully updated.',
+  'toast.emailChangeFailedDescription': 'Could not change your email.',
+  'toast.emailNotChangedDescription': 'The new email is the same as your current email.',
+  'toast.accountDeletedTitle': 'Account Deleted',
+  'toast.accountDeletedDescription': 'Your account has been successfully deleted.',
+  'toast.accountDeletionFailedDescription': 'Could not delete your account.',
 
 
   'userProfile.about': 'About',
@@ -195,6 +205,8 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'adminPage.dialog.cancelButton': 'Cancel',
   'adminPage.dialog.confirmButton': 'Confirm',
   'adminPage.dialog.confirmDeleteButton': 'Delete',
+  
+  'dialog.cancel': 'Cancel',
 
   'accountPage.title': 'Account Settings',
   'accountPage.editProfileTitle': 'Edit Profile',
@@ -205,4 +217,54 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'accountPage.avatarUrlPlaceholder': 'https://example.com/avatar.png',
   'accountPage.saveChangesButton': 'Save Changes',
   'accountPage.savingChangesButton': 'Saving...',
+  'accountPage.changePasswordTitle': 'Change Password',
+  'accountPage.changePasswordDescription': 'Update your account password.',
+  'accountPage.currentPasswordLabel': 'Current Password',
+  'accountPage.newPasswordLabel': 'New Password',
+  'accountPage.confirmNewPasswordLabel': 'Confirm New Password',
+  'accountPage.savePasswordButton': 'Save Password',
+  'accountPage.savingPasswordButton': 'Saving Password...',
+  'accountPage.changeEmailTitle': 'Change Email',
+  'accountPage.changeEmailDescription': 'Update your account email address.',
+  'accountPage.newEmailLabel': 'New Email Address',
+  'accountPage.saveEmailButton': 'Save Email',
+  'accountPage.savingEmailButton': 'Saving Email...',
+  'accountPage.deleteAccountTitle': 'Delete Account',
+  'accountPage.deleteAccountDescription': 'Permanently delete your account and all associated data.',
+  'accountPage.deleteWarning': 'This action is irreversible. All your data, including posts and comments, will be permanently removed or anonymized.',
+  'accountPage.deleteAccountButton': 'Delete My Account',
+  'accountPage.deleteConfirmTitle': 'Are you absolutely sure?',
+  'accountPage.deleteConfirmDescription': 'This action cannot be undone. This will permanently delete your account and remove your data from our servers. To confirm, please enter your current password.',
+  'accountPage.confirmDeleteButton': 'Yes, Delete My Account',
+  'accountPage.deletingButton': 'Deleting...',
+
+  'error.titleContentRequired': 'Title and content are required.',
+  'error.userNotFound': 'User not found.',
+  'error.commentEmpty': 'Comment content cannot be empty.',
+  'error.threadNotFound': 'Thread not found.',
+  'error.cannotFollowDeletedUser': 'Cannot follow this user.',
+  'error.alreadyFollowing': 'Already following this user.',
+  'error.adminOnlyAction': 'Unauthorized: Only admins can perform this action.',
+  'error.cannotRemoveLastAdmin': 'Cannot remove the last admin.',
+  'error.adminCannotDeleteSelf': 'Admin cannot delete themselves.',
+  'error.incorrectCurrentPassword': 'Incorrect current password.',
+  'error.emailInUse': 'This email is already in use.',
+  'error.userExists': 'User with this email or username already exists.',
+  'error.passwordRequiredForDelete': 'Password is required to delete account.',
 };
+
+// Error messages (not directly in UI, but for action results)
+PREDEFINED_TRANSLATIONS_EN['error.incorrectCurrentPassword'] = 'Incorrect current password.';
+PREDEFINED_TRANSLATIONS_EN['error.passwordsDontMatch'] = "Passwords don't match.";
+PREDEFINED_TRANSLATIONS_EN['error.emailInUse'] = 'This email is already in use.';
+PREDEFINED_TRANSLATIONS_EN['error.userNotFound'] = 'User not found.';
+PREDEFINED_TRANSLATIONS_EN['error.titleContentRequired'] = 'Title and content are required.';
+PREDEFINED_TRANSLATIONS_EN['error.commentEmpty'] = 'Comment content cannot be empty.';
+PREDEFINED_TRANSLATIONS_EN['error.threadNotFound'] = 'Thread not found.';
+PREDEFINED_TRANSLATIONS_EN['error.cannotFollowDeletedUser'] = 'Cannot follow this user.';
+PREDEFINED_TRANSLATIONS_EN['error.alreadyFollowing'] = 'Already following this user.';
+PREDEFINED_TRANSLATIONS_EN['error.adminOnlyAction'] = 'Unauthorized: Only admins can perform this action.';
+PREDEFINED_TRANSLATIONS_EN['error.cannotRemoveLastAdmin'] = 'Cannot remove the last admin.';
+PREDEFINED_TRANSLATIONS_EN['error.adminCannotDeleteSelf'] = 'Admin cannot delete themselves.';
+PREDEFINED_TRANSLATIONS_EN['error.userExists'] = 'User with this email or username already exists.';
+PREDEFINED_TRANSLATIONS_EN['error.passwordRequiredForDelete'] = 'Password is required to delete account.';

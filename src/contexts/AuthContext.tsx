@@ -3,9 +3,9 @@
 
 import type { User } from '@/lib/types';
 import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { initialMockUsers } from '@/lib/mock-data'; 
+import { createNewUserAction, getUserByIdAction } from '@/actions/threadActions'; // Using actions
 
-type StoredUser = User & { password?: string };
+type StoredUser = User & { password?: string }; // Kept for potential internal use, but actions manage passwords
 
 interface SignupData {
   email: string;
@@ -25,8 +25,7 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const FAKE_USERS_STORAGE_KEY = 'forumverse_users';
-const CURRENT_USER_STORAGE_KEY = 'forumverse_current_user';
+const CURRENT_USER_STORAGE_KEY = 'forumverse_current_user_auth_info'; // Renamed to avoid confusion
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUserState] = useState<User | null>(null); 
@@ -34,106 +33,71 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateAuthUser = useCallback((newUser: User | null) => {
     setUserState(newUser);
-    if (newUser) {
-      const { password, ...userToStore } = newUser; // Ensure password is not stored in localStorage for current user
-      try {
-        localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(userToStore));
-      } catch (error) {
-        console.error("Failed to save current user to localStorage", error);
-      }
-    } else {
-      try {
-        localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
-      } catch (error) {
-        console.error("Failed to remove current user from localStorage", error);
+    if (typeof localStorage !== 'undefined') {
+      if (newUser) {
+        const { password, ...userToStore } = newUser;
+        try {
+          localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(userToStore));
+        } catch (error) {
+          console.error("Failed to save current user to localStorage", error);
+        }
+      } else {
+        try {
+          localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+        } catch (error) {
+          console.error("Failed to remove current user from localStorage", error);
+        }
       }
     }
   }, []);
 
 
   useEffect(() => {
-    try {
-      const storedUserJson = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
-      if (storedUserJson) {
-        const storedUser = JSON.parse(storedUserJson) as User;
-        // Re-fetch from "DB" to ensure data consistency, especially isAdmin status
-        const usersInDb = getStoredUsers(); // This function now manages the mock DB with isAdmin flags
-        const liveUser = usersInDb.find(u => u.id === storedUser.id);
-        if (liveUser) {
-            const { password, ...userToContext } = liveUser;
-            updateAuthUser(userToContext);
-        } else {
-            updateAuthUser(null); // User in localStorage no longer in "DB"
+    let isMounted = true;
+    async function loadUser() {
+      if (typeof localStorage !== 'undefined') {
+        try {
+          const storedUserJson = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
+          if (storedUserJson) {
+            const storedUser = JSON.parse(storedUserJson) as User;
+            // Re-fetch from "DB" (global.mockDataStore via action) to ensure data consistency
+            const liveUser = await getUserByIdAction(storedUser.id);
+            if (isMounted) {
+              if (liveUser) {
+                  const { password, ...userToContext } = liveUser;
+                  updateAuthUser(userToContext);
+              } else {
+                  updateAuthUser(null); 
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Failed to load user from localStorage", error);
+          if (isMounted) updateAuthUser(null);
+        } finally {
+          if (isMounted) setIsLoading(false);
         }
+      } else {
+         if (isMounted) {
+            updateAuthUser(null);
+            setIsLoading(false);
+         }
       }
-    } catch (error) {
-      console.error("Failed to load user from localStorage", error);
-      updateAuthUser(null);
-    } finally {
-      setIsLoading(false);
     }
+    loadUser();
+    return () => { isMounted = false; };
   }, [updateAuthUser]);
 
-  const getStoredUsers = (): StoredUser[] => {
-    try {
-      const usersStr = localStorage.getItem(FAKE_USERS_STORAGE_KEY);
-      if (usersStr) {
-        const parsedUsers = JSON.parse(usersStr) as StoredUser[];
-        const allUsersMap = new Map(parsedUsers.map(u => [u.id, u])); // Use ID as key
-        
-        initialMockUsers.forEach(mockUser => {
-          const existingUser = allUsersMap.get(mockUser.id);
-          if (!existingUser) {
-            allUsersMap.set(mockUser.id, { ...mockUser, password: 'password123', isAdmin: mockUser.isAdmin || false, followingIds: mockUser.followingIds || [], followerIds: mockUser.followerIds || [] });
-          } else {
-             // Ensure existing users have isAdmin, followingIds, followerIds correctly from initialMockUsers if not present
-             const updatedExistingUser = {
-                ...existingUser,
-                isAdmin: existingUser.isAdmin !== undefined ? existingUser.isAdmin : (mockUser.isAdmin || false),
-                followingIds: existingUser.followingIds || mockUser.followingIds || [],
-                followerIds: existingUser.followerIds || mockUser.followerIds || [],
-             };
-             if (JSON.stringify(existingUser) !== JSON.stringify(updatedExistingUser)) {
-                 allUsersMap.set(mockUser.id, updatedExistingUser);
-             }
-          }
-        });
-        const updatedUsers = Array.from(allUsersMap.values());
-        if (usersStr !== JSON.stringify(updatedUsers)) { 
-            saveStoredUsers(updatedUsers);
-        }
-        return updatedUsers;
-      } else {
-        const initialUsersWithDetails = initialMockUsers.map(u => ({ ...u, password: 'password123', isAdmin: u.isAdmin || false, followingIds: u.followingIds || [], followerIds: u.followerIds || [] }));
-        saveStoredUsers(initialUsersWithDetails);
-        return initialUsersWithDetails;
-      }
-    } catch (error) {
-      console.error("Error in getStoredUsers:", error);
-      const initialUsersWithDetails = initialMockUsers.map(u => ({ ...u, password: 'password123', isAdmin: u.isAdmin || false, followingIds: u.followingIds || [], followerIds: u.followerIds || [] }));
-      saveStoredUsers(initialUsersWithDetails);
-      return initialUsersWithDetails;
-    }
-  };
 
-  const saveStoredUsers = (users: StoredUser[]) => {
-    try {
-      localStorage.setItem(FAKE_USERS_STORAGE_KEY, JSON.stringify(users));
-    } catch (error) {
-      console.error("Failed to save users to localStorage", error);
-    }
-  };
-
-
-  const login = useCallback(async (email: string, password?: string): Promise<boolean> => {
+  const login = useCallback(async (email: string, passwordAttempt?: string): Promise<boolean> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500)); 
+    await new Promise(resolve => setTimeout(resolve, 300)); 
 
-    const storedUsers = getStoredUsers();
-    const userToLogin = storedUsers.find(u => u.email === email && u.password === password);
+    // global.mockDataStore is initialized and managed by threadActions.ts
+    const userToLogin = global.mockDataStore?.users.find(u => u.email === email && u.password === passwordAttempt);
 
     if (userToLogin) {
-      const { password: _p, ...userWithoutPassword } = userToLogin;
+      const { password, ...userWithoutPassword } = userToLogin;
       updateAuthUser(userWithoutPassword); 
       setIsLoading(false);
       return true;
@@ -145,42 +109,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = useCallback(async (data: SignupData): Promise<boolean> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500)); 
+    await new Promise(resolve => setTimeout(resolve, 300)); 
 
-    const storedUsers = getStoredUsers();
-    if (storedUsers.find(u => u.email === data.email || u.username === data.username)) {
-      setIsLoading(false);
-      return false; 
+    const result = await createNewUserAction({
+        email: data.email,
+        username: data.username,
+        displayName: data.displayName,
+        password: data.password,
+    });
+
+    if ('error' in result) {
+        setIsLoading(false);
+        return false;
+    } else {
+        // createNewUserAction already returns user without password
+        updateAuthUser(result);
+        setIsLoading(false);
+        return true;
     }
-
-    const newUser: StoredUser = {
-      id: `user${Date.now()}`,
-      email: data.email,
-      username: data.username,
-      displayName: data.displayName || data.username, 
-      password: data.password, 
-      avatarUrl: `https://placehold.co/40x40.png?text=${(data.displayName || data.username).charAt(0).toUpperCase()}`,
-      createdAt: new Date().toISOString(),
-      isAdmin: false, 
-      followingIds: [],
-      followerIds: [],
-    };
-
-    saveStoredUsers([...storedUsers, newUser]);
-
-    if (global.mockDataStore && global.mockDataStore.users) {
-        const { password: _p, ...userForGlobalStore } = newUser;
-        global.mockDataStore.users.push(userForGlobalStore);
-    }
-
-    const { password: _p2, ...userWithoutPassword } = newUser;
-    updateAuthUser(userWithoutPassword);
-    setIsLoading(false);
-    return true;
   }, [updateAuthUser]);
 
   const logout = useCallback(() => {
     updateAuthUser(null);
+    if (typeof window !== 'undefined') {
+        window.location.href = '/login'; // Redirect to login after logout
+    }
   }, [updateAuthUser]);
 
   return (

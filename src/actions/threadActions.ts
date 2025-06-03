@@ -2,9 +2,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { initialMockUsers } from '@/lib/mock-data';
+import { initialMockUsers, initialMockThreads } from '@/lib/mock-data'; // Updated import
 import type { Thread, Comment, User, Notification, NotificationType, NotificationEntityType, UpdateProfileData } from '@/lib/types';
-import { PREDEFINED_TRANSLATIONS_EN } from '@/lib/translations-en'; // For generating default content
+import { PREDEFINED_TRANSLATIONS_EN } from '@/lib/translations-en';
 
 const DELETED_USER_PLACEHOLDER: User = {
   id: 'deleted_user_placeholder',
@@ -12,42 +12,108 @@ const DELETED_USER_PLACEHOLDER: User = {
   displayName: 'Deleted User',
   email: 'deleted@example.com',
   avatarUrl: 'https://placehold.co/40x40.png?text=X',
-  createdAt: new Date(0).toISOString(), // Epoch time
+  createdAt: new Date(0).toISOString(),
   isAdmin: false,
   followerIds: [],
   followingIds: [],
 };
 
+const USERS_STORAGE_KEY = 'forumverse_users_db_global';
+const THREADS_STORAGE_KEY = 'forumverse_threads_db_global';
+const NOTIFICATIONS_STORAGE_KEY = 'forumverse_notifications_db_global';
+
+// Helper function to persist users to localStorage
+function persistUsersToLocalStorage() {
+  if (typeof localStorage !== 'undefined' && global.mockDataStore) {
+    try {
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(global.mockDataStore.users));
+    } catch (error) {
+      console.error("Failed to save users to localStorage from threadActions", error);
+    }
+  }
+}
+
+// Helper function to persist threads to localStorage
+function persistThreadsToLocalStorage() {
+  if (typeof localStorage !== 'undefined' && global.mockDataStore) {
+    try {
+      localStorage.setItem(THREADS_STORAGE_KEY, JSON.stringify(global.mockDataStore.threads));
+    } catch (error) {
+      console.error("Failed to save threads to localStorage from threadActions", error);
+    }
+  }
+}
+
+// Helper function to persist notifications to localStorage
+function persistNotificationsToLocalStorage() {
+  if (typeof localStorage !== 'undefined' && global.mockDataStore) {
+    try {
+      localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(global.mockDataStore.notifications));
+    } catch (error) {
+      console.error("Failed to save notifications to localStorage from threadActions", error);
+    }
+  }
+}
+
 
 // Initialize global mock data store if it doesn't exist.
 if (typeof global.mockDataStore === 'undefined') {
-  const initialUsersWithFollowAndAdmin = initialMockUsers.map(u => ({
-    ...u,
-    followingIds: u.followingIds || [],
-    followerIds: u.followerIds || [],
-    isAdmin: u.isAdmin || false,
-  }));
+  let usersFromStorage: User[] = [];
+  let threadsFromStorage: Thread[] = [];
+  let notificationsFromStorage: Notification[] = [];
+
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const storedUsersJson = localStorage.getItem(USERS_STORAGE_KEY);
+      if (storedUsersJson) usersFromStorage = JSON.parse(storedUsersJson);
+
+      const storedThreadsJson = localStorage.getItem(THREADS_STORAGE_KEY);
+      if (storedThreadsJson) threadsFromStorage = JSON.parse(storedThreadsJson);
+      
+      const storedNotificationsJson = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
+      if (storedNotificationsJson) notificationsFromStorage = JSON.parse(storedNotificationsJson);
+
+    } catch (e) { console.error("Error reading from localStorage during init:", e); }
+  }
+
+  const combinedUsersMap = new Map<string, User>();
+  initialMockUsers.forEach(u => {
+    const defaultPassword = u.password || 'password123'; // Use provided password or default
+    combinedUsersMap.set(u.id, { ...u, password: defaultPassword, isAdmin: u.isAdmin || false, followingIds: u.followingIds || [], followerIds: u.followerIds || [] });
+  });
+  usersFromStorage.forEach(u => combinedUsersMap.set(u.id, u)); // Persisted users override defaults
+
+  const combinedThreadsMap = new Map<string, Thread>();
+  initialMockThreads.forEach(t => combinedThreadsMap.set(t.id, t));
+  threadsFromStorage.forEach(t => combinedThreadsMap.set(t.id, t));
+
 
   global.mockDataStore = {
-    threads: JSON.parse(JSON.stringify(initialMockUsers.find(u => u.username === 'alice') ? initialMockThreads : [])) as Thread[], // Added a check for alice before using initialMockThreads
-    users: JSON.parse(JSON.stringify(initialUsersWithFollowAndAdmin)) as User[],
-    notifications: [] as Notification[], // Initialize notifications
+    threads: Array.from(combinedThreadsMap.values()),
+    users: Array.from(combinedUsersMap.values()),
+    notifications: notificationsFromStorage.length > 0 ? notificationsFromStorage : [],
   };
+
+  if (typeof localStorage !== 'undefined') {
+    persistUsersToLocalStorage();
+    persistThreadsToLocalStorage();
+    persistNotificationsToLocalStorage();
+  }
 }
+
 
 // Helper to get a user by ID (simulating DB access)
 function findUserById(userId: string): User | undefined {
   return global.mockDataStore.users.find(u => u.id === userId);
 }
 
-// Helper function to create and store a notification
 function createMockNotification(
   recipientId: string,
   type: NotificationType,
   actorId: string | null,
-  entityId: string, // ID of the item being acted upon (thread, comment, or user being followed)
+  entityId: string, 
   entityType: NotificationEntityType,
-  relatedEntityId?: string | null, // e.g., threadId if entityType is 'comment'
+  relatedEntityId?: string | null, 
   contentKey?: string, 
   contentArgs?: Record<string, string>
 ): Notification | null {
@@ -96,7 +162,7 @@ function createMockNotification(
 
 
   const newNotification: Notification = {
-    id: `notif${Date.now()}${Math.random()}`,
+    id: `notif${Date.now()}${Math.random().toString(36).substring(2, 15)}`,
     userId: recipientId,
     type,
     actorId,
@@ -111,6 +177,7 @@ function createMockNotification(
   };
 
   global.mockDataStore.notifications.unshift(newNotification);
+  persistNotificationsToLocalStorage();
   revalidatePath('/notifications'); 
   revalidatePath('/api/unread-notifications'); 
   return newNotification;
@@ -122,12 +189,12 @@ export async function createThreadAction(formData: FormData, authorEmail: string
   const content = formData.get('content') as string;
 
   if (!title || !content) {
-    return { error: 'Title and content are required.' };
+    return { error: PREDEFINED_TRANSLATIONS_EN['error.titleContentRequired'] || 'Title and content are required.' };
   }
   
   const author = global.mockDataStore.users.find(u => u.email === authorEmail);
   if (!author) {
-    return { error: 'User not found.' };
+    return { error: PREDEFINED_TRANSLATIONS_EN['error.userNotFound'] || 'User not found.' };
   }
 
   const newThread: Thread = {
@@ -143,6 +210,7 @@ export async function createThreadAction(formData: FormData, authorEmail: string
   };
 
   global.mockDataStore.threads.unshift(newThread);
+  persistThreadsToLocalStorage();
 
   author.followerIds?.forEach(followerId => {
     createMockNotification(
@@ -166,21 +234,21 @@ export async function addCommentAction(threadId: string, formData: FormData, aut
   const content = formData.get('content') as string;
 
   if (!content) {
-    return { error: 'Comment content cannot be empty.' };
+    return { error: PREDEFINED_TRANSLATIONS_EN['error.commentEmpty'] || 'Comment content cannot be empty.' };
   }
 
   const author = global.mockDataStore.users.find(u => u.email === authorEmail);
   if (!author) {
-    return { error: 'User not found.' };
+    return { error: PREDEFINED_TRANSLATIONS_EN['error.userNotFound'] || 'User not found.' };
   }
   
   const thread = global.mockDataStore.threads.find(t => t.id === threadId);
   if (!thread) {
-    return { error: 'Thread not found.' };
+    return { error: PREDEFINED_TRANSLATIONS_EN['error.threadNotFound'] || 'Thread not found.' };
   }
 
   const newComment: Comment = {
-    id: `comment${Date.now()}`,
+    id: `comment${Date.now()}${Math.random().toString(36).substring(2, 15)}`,
     threadId,
     parentId: parentId || null,
     author,
@@ -212,6 +280,7 @@ export async function addCommentAction(threadId: string, formData: FormData, aut
     thread.comments.push(newComment);
   }
   thread.commentCount +=1;
+  persistThreadsToLocalStorage();
   
   if (thread.author.id !== author.id) {
     createMockNotification(
@@ -251,6 +320,7 @@ export async function voteThreadAction(threadId: string, type: 'upvote' | 'downv
     } else {
       thread.downvotes += 1;
     }
+    persistThreadsToLocalStorage();
 
     if (voterId && thread.author.id !== voterId && thread.author.id !== DELETED_USER_PLACEHOLDER.id) {
       const voter = findUserById(voterId);
@@ -293,6 +363,7 @@ export async function voteCommentAction(threadId: string, commentId: string, typ
     } else {
       targetComment.downvotes += 1;
     }
+    persistThreadsToLocalStorage();
 
     if (voterId && targetComment.author.id !== voterId && targetComment.author.id !== DELETED_USER_PLACEHOLDER.id) {
       const voter = findUserById(voterId);
@@ -345,18 +416,19 @@ export async function followUserAction(targetUserId: string, currentUserId: stri
   const currentUser = global.mockDataStore.users.find(u => u.id === currentUserId);
 
   if (!targetUser || !currentUser) {
-    return { success: false, error: 'User not found.' };
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.userNotFound'] || 'User not found.' };
   }
   if (targetUser.id === DELETED_USER_PLACEHOLDER.id) {
-    return { success: false, error: 'Cannot follow this user.' };
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.cannotFollowDeletedUser'] || 'Cannot follow this user.' };
   }
 
   if (currentUser.followingIds?.includes(targetUserId)) {
-    return { success: false, error: 'Already following this user.' };
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.alreadyFollowing'] || 'Already following this user.' };
   }
 
   currentUser.followingIds = [...(currentUser.followingIds || []), targetUserId];
   targetUser.followerIds = [...(targetUser.followerIds || []), currentUserId];
+  persistUsersToLocalStorage();
 
   createMockNotification(
     targetUserId,
@@ -379,11 +451,12 @@ export async function unfollowUserAction(targetUserId: string, currentUserId: st
   const currentUser = global.mockDataStore.users.find(u => u.id === currentUserId);
 
   if (!targetUser || !currentUser) {
-    return { success: false, error: 'User not found.' };
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.userNotFound'] || 'User not found.' };
   }
 
   currentUser.followingIds = (currentUser.followingIds || []).filter(id => id !== targetUserId);
   targetUser.followerIds = (targetUser.followerIds || []).filter(id => id !== currentUserId);
+  persistUsersToLocalStorage();
   
   revalidatePath(`/u/${targetUser.username}`);
   revalidatePath(`/u/${currentUser.username}`);
@@ -404,6 +477,7 @@ export async function markNotificationAsReadAction(notificationId: string, userI
   const notification = (global.mockDataStore.notifications || []).find(n => n.id === notificationId && n.userId === userId);
   if (notification) {
     notification.isRead = true;
+    persistNotificationsToLocalStorage();
   }
   revalidatePath('/notifications');
   revalidatePath('/api/unread-notifications'); 
@@ -415,11 +489,11 @@ export async function markAllNotificationsAsReadAction(userId: string): Promise<
       n.isRead = true;
     }
   });
+  persistNotificationsToLocalStorage();
   revalidatePath('/notifications');
   revalidatePath('/api/unread-notifications'); 
 }
 
-// Admin Actions
 export async function getAllUsersForAdminAction(): Promise<User[]> {
   return JSON.parse(JSON.stringify(global.mockDataStore.users.filter(u => u.id !== DELETED_USER_PLACEHOLDER.id) || []));
 }
@@ -427,28 +501,27 @@ export async function getAllUsersForAdminAction(): Promise<User[]> {
 export async function setUserAdminStatusAction(targetUserId: string, makeAdmin: boolean, currentAdminId: string): Promise<{ success: boolean, error?: string }> {
   const currentAdmin = findUserById(currentAdminId);
   if (!currentAdmin || !currentAdmin.isAdmin) {
-    return { success: false, error: 'Unauthorized: Only admins can perform this action.' };
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.adminOnlyAction'] || 'Unauthorized: Only admins can perform this action.' };
   }
 
   const targetUser = findUserById(targetUserId);
   if (!targetUser) {
-    return { success: false, error: 'Target user not found.' };
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.userNotFound'] || 'Target user not found.' };
   }
   
   if (targetUser.id === currentAdminId && !makeAdmin) {
      const adminCount = global.mockDataStore.users.filter(u => u.isAdmin).length;
      if (adminCount <= 1) {
-        return { success: false, error: 'Cannot remove the last admin.' };
+        return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.cannotRemoveLastAdmin'] || 'Cannot remove the last admin.' };
      }
   }
 
-
   targetUser.isAdmin = makeAdmin;
   
-  // Update user in global store
   const userIndex = global.mockDataStore.users.findIndex(u => u.id === targetUserId);
   if (userIndex !== -1) {
     global.mockDataStore.users[userIndex] = targetUser;
+    persistUsersToLocalStorage();
   }
 
   revalidatePath('/admin');
@@ -456,67 +529,64 @@ export async function setUserAdminStatusAction(targetUserId: string, makeAdmin: 
   return { success: true };
 }
 
-export async function deleteUserAction(targetUserId: string, currentAdminId: string): Promise<{ success: boolean, error?: string }> {
-  const currentAdmin = findUserById(currentAdminId);
-  if (!currentAdmin || !currentAdmin.isAdmin) {
-    return { success: false, error: 'Unauthorized: Only admins can perform this action.' };
-  }
-
-  if (targetUserId === currentAdminId) {
-    return { success: false, error: 'Admin cannot delete themselves.' };
-  }
-  
+function performUserDeletion(targetUserId: string): void {
   const targetUserIndex = global.mockDataStore.users.findIndex(u => u.id === targetUserId);
-  if (targetUserIndex === -1) {
-    return { success: false, error: 'Target user not found.' };
-  }
-  const targetUser = global.mockDataStore.users[targetUserIndex];
+  if (targetUserIndex === -1) return;
 
-  // Remove user from main list
   global.mockDataStore.users.splice(targetUserIndex, 1);
 
-  // Update author of threads
   global.mockDataStore.threads.forEach(thread => {
     if (thread.author.id === targetUserId) {
       thread.author = { ...DELETED_USER_PLACEHOLDER };
     }
-    // Update author of comments and replies
     const updateCommentAuthors = (comments: Comment[]) => {
       comments.forEach(comment => {
         if (comment.author.id === targetUserId) {
           comment.author = { ...DELETED_USER_PLACEHOLDER };
         }
-        if (comment.replies) {
-          updateCommentAuthors(comment.replies);
-        }
+        if (comment.replies) updateCommentAuthors(comment.replies);
       });
     };
     updateCommentAuthors(thread.comments);
   });
+  persistThreadsToLocalStorage();
 
-  // Remove from follower/following lists
+
   global.mockDataStore.users.forEach(user => {
     user.followerIds = user.followerIds?.filter(id => id !== targetUserId);
     user.followingIds = user.followingIds?.filter(id => id !== targetUserId);
   });
+  // No need to call persistUsersToLocalStorage() here as it's called after splice.
 
-  // Clean up notifications
   global.mockDataStore.notifications = global.mockDataStore.notifications.filter(
     notif => notif.userId !== targetUserId && notif.actorId !== targetUserId
   );
-  // Potentially update notifications where entityId is the user
   global.mockDataStore.notifications.forEach(notif => {
     if (notif.entityType === 'user' && notif.entityId === targetUserId) {
       notif.actorId = DELETED_USER_PLACEHOLDER.id; 
     }
   });
-
+  persistNotificationsToLocalStorage();
+  persistUsersToLocalStorage(); // Persist changes from follower/following lists and user deletion
 
   revalidatePath('/admin');
   revalidatePath('/'); 
   global.mockDataStore.users.forEach(u => revalidatePath(`/u/${u.username}`));
   global.mockDataStore.threads.forEach(t => revalidatePath(`/t/${t.id}`));
+}
 
+
+export async function deleteUserAction(targetUserId: string, currentAdminId: string): Promise<{ success: boolean, error?: string }> {
+  const currentAdmin = findUserById(currentAdminId);
+  if (!currentAdmin || !currentAdmin.isAdmin) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.adminOnlyAction'] || 'Unauthorized: Only admins can perform this action.' };
+  }
+
+  if (targetUserId === currentAdminId) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.adminCannotDeleteSelf'] || 'Admin cannot delete themselves.' };
+  }
+  
+  performUserDeletion(targetUserId);
   return { success: true };
 }
 
@@ -527,21 +597,20 @@ export async function updateUserProfileAction(
   const userIndex = global.mockDataStore.users.findIndex((u: User) => u.id === userId);
 
   if (userIndex === -1) {
-    return { success: false, error: 'User not found.' };
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.userNotFound'] || 'User not found.' };
   }
 
-  const currentUser = global.mockDataStore.users[userIndex];
+  const currentUserData = global.mockDataStore.users[userIndex];
   
-  // Update allowed fields
   const updatedUser = {
-    ...currentUser,
-    displayName: data.displayName !== undefined ? data.displayName : currentUser.displayName,
-    avatarUrl: data.avatarUrl !== undefined ? data.avatarUrl : currentUser.avatarUrl,
+    ...currentUserData,
+    displayName: data.displayName !== undefined ? data.displayName : currentUserData.displayName,
+    avatarUrl: data.avatarUrl !== undefined ? data.avatarUrl : currentUserData.avatarUrl,
   };
 
   global.mockDataStore.users[userIndex] = updatedUser;
+  persistUsersToLocalStorage();
 
-  // Also update the user in threads and comments author references
   global.mockDataStore.threads.forEach((thread: Thread) => {
     if (thread.author.id === userId) {
       thread.author = { ...thread.author, ...updatedUser };
@@ -557,16 +626,101 @@ export async function updateUserProfileAction(
       });
     });
   });
+  persistThreadsToLocalStorage();
   
   revalidatePath(`/u/${updatedUser.username}`);
   revalidatePath('/account');
-  // Revalidate other paths where user info might be displayed, like navbar or thread items implicitly
   revalidatePath('/');
 
-
-  // Return the updated user object without the password
   const { password, ...userToReturn } = updatedUser;
   return { success: true, user: userToReturn };
 }
-// Reference to initialMockThreads, remove if not used elsewhere.
-const initialMockThreads = global.mockDataStore.threads;
+
+export async function changePasswordAction(userId: string, currentPasswordAttempt: string, newPasswordVal: string): Promise<{ success: boolean; error?: string }> {
+  const userIndex = global.mockDataStore.users.findIndex(u => u.id === userId);
+  if (userIndex === -1) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.userNotFound'] || 'User not found.' };
+  }
+
+  const user = global.mockDataStore.users[userIndex];
+  if (user.password !== currentPasswordAttempt) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.incorrectCurrentPassword'] || 'Incorrect current password.' };
+  }
+
+  global.mockDataStore.users[userIndex].password = newPasswordVal;
+  persistUsersToLocalStorage();
+  
+  return { success: true };
+}
+
+export async function changeEmailAction(userId: string, newEmail: string, currentPasswordAttempt: string): Promise<{ success: boolean; user?: User; error?: string }> {
+  const userIndex = global.mockDataStore.users.findIndex(u => u.id === userId);
+  if (userIndex === -1) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.userNotFound'] || 'User not found.' };
+  }
+
+  const user = global.mockDataStore.users[userIndex];
+  if (user.password !== currentPasswordAttempt) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.incorrectCurrentPassword'] || 'Incorrect current password.' };
+  }
+
+  const emailExists = global.mockDataStore.users.some(u => u.email === newEmail && u.id !== userId);
+  if (emailExists) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.emailInUse'] || 'This email is already in use.' };
+  }
+
+  global.mockDataStore.users[userIndex].email = newEmail;
+  persistUsersToLocalStorage();
+
+  const { password, ...userToReturn } = global.mockDataStore.users[userIndex];
+  return { success: true, user: userToReturn };
+}
+
+export async function deleteCurrentUserAccountAction(userId: string, currentPasswordAttempt: string): Promise<{ success: boolean; error?: string }> {
+  const userIndex = global.mockDataStore.users.findIndex(u => u.id === userId);
+  if (userIndex === -1) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.userNotFound'] || 'User not found.' };
+  }
+
+  const user = global.mockDataStore.users[userIndex];
+  if (user.password !== currentPasswordAttempt) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.incorrectCurrentPassword'] || 'Incorrect current password for account deletion.' };
+  }
+
+  performUserDeletion(userId); // This already calls persistUsersToLocalStorage
+  // No need to revalidate paths here, performUserDeletion handles it.
+
+  return { success: true };
+}
+
+export async function createNewUserAction(userData: Omit<User, 'id' | 'createdAt' | 'isAdmin' | 'followerIds' | 'followingIds'> & { password?: string }): Promise<User | { error: string }> {
+  const { email, username, displayName, password: userPassword, avatarUrl } = userData;
+
+  if (global.mockDataStore.users.find(u => u.email === email || u.username === username)) {
+    return { error: PREDEFINED_TRANSLATIONS_EN['error.userExists'] || 'User with this email or username already exists.' };
+  }
+
+  const newUser: User = {
+    id: `user${Date.now()}${Math.random().toString(36).substring(2, 15)}`,
+    email,
+    username,
+    displayName: displayName || username,
+    avatarUrl: avatarUrl || `https://placehold.co/40x40.png?text=${(displayName || username).charAt(0).toUpperCase()}`,
+    createdAt: new Date().toISOString(),
+    isAdmin: false,
+    followerIds: [],
+    followingIds: [],
+    password: userPassword || 'password123', // Store password for mock auth
+  };
+
+  global.mockDataStore.users.push(newUser);
+  persistUsersToLocalStorage();
+  
+  const { password, ...userToReturn } = newUser;
+  return userToReturn;
+}
+
+// The exports for initialMockUsers and initialMockThreads were removed as they caused a 'use server' violation.
+// If these are needed by client components, they should be imported directly from '@/lib/mock-data'.
+// AuthContext and other server-side logic within this file already initialize the global.mockDataStore correctly using these initial values.
+    
