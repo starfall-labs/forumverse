@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,6 +12,7 @@ import { useRouter } from 'next/navigation'; // For redirecting if not logged in
 import { addCommentAction } from '@/actions/threadActions';
 import { useToast } from "@/hooks/use-toast";
 import { useState } from 'react';
+import Link from 'next/link'; // Added import
 
 const formSchema = z.object({
   content: z.string().min(1, { message: 'Comment cannot be empty.' }).max(2000, {message: 'Comment too long.'}),
