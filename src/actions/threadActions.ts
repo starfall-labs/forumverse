@@ -3,16 +3,134 @@
 
 import { revalidatePath } from 'next/cache';
 import { initialMockThreads, initialMockUsers } from '@/lib/mock-data';
-import type { Thread, Comment, User } from '@/lib/types';
+import type { Thread, Comment, User, Notification, NotificationType, NotificationEntityType } from '@/lib/types';
+import { PREDEFINED_TRANSLATIONS_EN } from '@/lib/translations-en'; // For generating default content
 
 // Initialize global mock data store if it doesn't exist.
-// This ensures data persistence across server action calls in dev mode.
 if (typeof global.mockDataStore === 'undefined') {
+  const initialUsersWithFollow = initialMockUsers.map(u => ({
+    ...u,
+    followingIds: u.followingIds || [],
+    followerIds: u.followerIds || [],
+  }));
+
   global.mockDataStore = {
     threads: JSON.parse(JSON.stringify(initialMockThreads)) as Thread[],
-    users: JSON.parse(JSON.stringify(initialMockUsers)) as User[],
+    users: JSON.parse(JSON.stringify(initialUsersWithFollow)) as User[],
+    notifications: [] as Notification[], // Initialize notifications
   };
 }
+
+// Helper to get a user by ID (simulating DB access)
+function findUserById(userId: string): User | undefined {
+  return global.mockDataStore.users.find(u => u.id === userId);
+}
+
+// Helper function to create and store a notification
+// This function now generates English content directly for simplicity in server actions.
+// A more robust solution would involve a translation service or passing locale.
+function createMockNotification(
+  recipientId: string,
+  type: NotificationType,
+  actorId: string | null,
+  entityId: string, // ID of the item being acted upon (thread, comment, or user being followed)
+  entityType: NotificationEntityType,
+  relatedEntityId?: string | null, // e.g., threadId if entityType is 'comment'
+  contentKey?: string, // Key for specific content generation logic
+  contentArgs?: Record<string, string> // Additional args for content generation
+): Notification | null {
+  if (actorId === recipientId && type !== NotificationType.USER_FOLLOWED_YOU) { // Avoid self-notification, except for "X followed you"
+    // For votes, if actorId is recipientId, it's a self-vote, don't notify.
+    if (type === NotificationType.THREAD_UPVOTE || type === NotificationType.THREAD_DOWNVOTE ||
+        type === NotificationType.COMMENT_UPVOTE || type === NotificationType.COMMENT_DOWNVOTE) {
+      return null;
+    }
+  }
+
+  const actor = actorId ? findUserById(actorId) : null;
+  const actorName = actor?.displayName || actor?.username || 'Someone';
+  let content = '';
+  let link = '/';
+
+  const threadForContent = entityType === 'thread' ? global.mockDataStore.threads.find(t => t.id === entityId) : 
+                           (entityType === 'comment' && relatedEntityId) ? global.mockDataStore.threads.find(t => t.id === relatedEntityId) : null;
+  const threadTitle = threadForContent?.title || 'a thread';
+
+  const commentForContent = entityType === 'comment' ? 
+    threadForContent?.comments.flatMap(c => [c, ...(c.replies || [])]).find(c => c.id === entityId) : null;
+  // const commentTextSnippet = commentForContent ? (commentForContent.content.substring(0, 30) + "...") : "a comment";
+
+
+  switch (type) {
+    case NotificationType.NEW_THREAD_FROM_FOLLOWED_USER:
+      content = `${actorName} posted a new thread: "${threadTitle}"`;
+      link = `/t/${entityId}`;
+      break;
+    case NotificationType.NEW_COMMENT_ON_THREAD:
+      content = `${actorName} commented on your thread: "${threadTitle}"`;
+      link = `/t/${relatedEntityId}#comment-${entityId}`;
+      break;
+    case NotificationType.NEW_REPLY_TO_COMMENT:
+      content = `${actorName} replied to your comment on "${threadTitle}"`;
+      link = `/t/${relatedEntityId}#comment-${entityId}`;
+      break;
+    case NotificationType.USER_FOLLOWED_YOU:
+      content = `${actorName} started following you.`;
+      link = `/u/${actor?.username}`;
+      break;
+    case NotificationType.THREAD_UPVOTE:
+      content = contentKey && PREDEFINED_TRANSLATIONS_EN[contentKey] ? 
+                PREDEFINED_TRANSLATIONS_EN[contentKey].replace('{actorName}', actorName).replace('{threadTitle}', threadTitle)
+                : `${actorName} upvoted your thread: "${threadTitle}"`;
+      link = `/t/${entityId}`;
+      break;
+    case NotificationType.THREAD_DOWNVOTE:
+       content = contentKey && PREDEFINED_TRANSLATIONS_EN[contentKey] ? 
+                PREDEFINED_TRANSLATIONS_EN[contentKey].replace('{actorName}', actorName).replace('{threadTitle}', threadTitle)
+                : `${actorName} downvoted your thread: "${threadTitle}"`;
+      link = `/t/${entityId}`;
+      break;
+    case NotificationType.COMMENT_UPVOTE:
+      content = contentKey && PREDEFINED_TRANSLATIONS_EN[contentKey] ? 
+                PREDEFINED_TRANSLATIONS_EN[contentKey].replace('{actorName}', actorName).replace('{threadTitle}', threadTitle)
+                : `${actorName} upvoted your comment on thread: "${threadTitle}"`;
+      link = `/t/${relatedEntityId}#comment-${entityId}`;
+      break;
+    case NotificationType.COMMENT_DOWNVOTE:
+      content = contentKey && PREDEFINED_TRANSLATIONS_EN[contentKey] ? 
+                PREDEFINED_TRANSLATIONS_EN[contentKey].replace('{actorName}', actorName).replace('{threadTitle}', threadTitle)
+                : `${actorName} downvoted your comment on thread: "${threadTitle}"`;
+      link = `/t/${relatedEntityId}#comment-${entityId}`;
+      break;
+    default:
+      return null; // Unknown notification type
+  }
+  
+  const finalContentKey = contentKey || `notification.default.${type}`; // Fallback content key
+  const finalContentArgs = contentArgs || { actorName, itemTitle: entityType === 'thread' ? threadTitle : (entityType === 'comment' ? "your comment" : "you") };
+
+
+  const newNotification: Notification = {
+    id: `notif${Date.now()}${Math.random()}`,
+    userId: recipientId,
+    type,
+    actorId,
+    entityId,
+    entityType,
+    relatedEntityId,
+    contentKey: finalContentKey,
+    contentArgs: finalContentArgs,
+    link,
+    createdAt: new Date().toISOString(),
+    isRead: false,
+  };
+
+  global.mockDataStore.notifications.unshift(newNotification);
+  revalidatePath('/notifications'); // Revalidate notifications page
+  // Consider revalidating Navbar if it shows unread count directly from an action
+  return newNotification;
+}
+
 
 export async function createThreadAction(formData: FormData, authorEmail: string): Promise<Thread | { error: string }> {
   const title = formData.get('title') as string;
@@ -40,6 +158,20 @@ export async function createThreadAction(formData: FormData, authorEmail: string
   };
 
   global.mockDataStore.threads.unshift(newThread);
+
+  // Notify followers
+  author.followerIds?.forEach(followerId => {
+    createMockNotification(
+      followerId,
+      NotificationType.NEW_THREAD_FROM_FOLLOWED_USER,
+      author.id,
+      newThread.id,
+      'thread',
+      null,
+      'notification.newThreadFromFollowedUser',
+      { actorName: author.displayName || author.username, threadTitle: newThread.title}
+    );
+  });
 
   revalidatePath('/');
   revalidatePath(`/t/${newThread.id}`);
@@ -75,11 +207,14 @@ export async function addCommentAction(threadId: string, formData: FormData, aut
     replies: [],
   };
 
+  let parentCommentAuthorId: string | null = null;
+
   if (parentId) {
     const findParentAndAddReply = (comments: Comment[]): boolean => {
       for (let c of comments) {
         if (c.id === parentId) {
           c.replies = c.replies ? [...c.replies, newComment] : [newComment];
+          parentCommentAuthorId = c.author.id;
           return true;
         }
         if (c.replies && findParentAndAddReply(c.replies)) {
@@ -94,11 +229,39 @@ export async function addCommentAction(threadId: string, formData: FormData, aut
   }
   thread.commentCount +=1;
   
+  // Notify thread author (if not the commenter)
+  if (thread.author.id !== author.id) {
+    createMockNotification(
+      thread.author.id,
+      NotificationType.NEW_COMMENT_ON_THREAD,
+      author.id,
+      newComment.id,
+      'comment',
+      thread.id,
+      'notification.newCommentOnThread',
+      { actorName: author.displayName || author.username, threadTitle: thread.title }
+    );
+  }
+
+  // Notify parent comment author (if it's a reply and not self-reply)
+  if (parentId && parentCommentAuthorId && parentCommentAuthorId !== author.id) {
+    createMockNotification(
+      parentCommentAuthorId,
+      NotificationType.NEW_REPLY_TO_COMMENT,
+      author.id,
+      newComment.id,
+      'comment',
+      thread.id,
+      'notification.newReplyToComment',
+      { actorName: author.displayName || author.username, threadTitle: thread.title }
+    );
+  }
+  
   revalidatePath(`/t/${threadId}`);
   return newComment;
 }
 
-export async function voteThreadAction(threadId: string, type: 'upvote' | 'downvote'): Promise<void> {
+export async function voteThreadAction(threadId: string, type: 'upvote' | 'downvote', voterId?: string): Promise<void> {
   const thread = global.mockDataStore.threads.find(t => t.id === threadId);
   if (thread) {
     if (type === 'upvote') {
@@ -106,33 +269,68 @@ export async function voteThreadAction(threadId: string, type: 'upvote' | 'downv
     } else {
       thread.downvotes += 1;
     }
+
+    if (voterId && thread.author.id !== voterId) {
+      const voter = findUserById(voterId);
+      createMockNotification(
+        thread.author.id,
+        type === 'upvote' ? NotificationType.THREAD_UPVOTE : NotificationType.THREAD_DOWNVOTE,
+        voterId,
+        thread.id,
+        'thread',
+        null,
+        type === 'upvote' ? 'notification.threadUpvoted' : 'notification.threadDownvoted',
+        { actorName: voter?.displayName || voter?.username || "Someone", threadTitle: thread.title }
+      );
+    }
   }
   revalidatePath('/');
   revalidatePath(`/t/${threadId}`);
 }
 
-export async function voteCommentAction(threadId: string, commentId: string, type: 'upvote' | 'downvote'): Promise<void> {
+export async function voteCommentAction(threadId: string, commentId: string, type: 'upvote' | 'downvote', voterId?: string): Promise<void> {
   const thread = global.mockDataStore.threads.find(t => t.id === threadId);
   if (!thread) return;
 
-  const findAndUpdateComment = (comments: Comment[]): boolean => {
+  let targetComment: Comment | null = null;
+  const findComment = (comments: Comment[]): Comment | null => {
     for (let c of comments) {
-      if (c.id === commentId) {
-        if (type === 'upvote') c.upvotes += 1;
-        else c.downvotes += 1;
-        return true;
+      if (c.id === commentId) return c;
+      if (c.replies) {
+        const foundInReply = findComment(c.replies);
+        if (foundInReply) return foundInReply;
       }
-      if (c.replies && findAndUpdateComment(c.replies)) return true;
     }
-    return false;
+    return null;
   }
+  targetComment = findComment(thread.comments);
 
-  findAndUpdateComment(thread.comments);
+  if (targetComment) {
+    if (type === 'upvote') {
+      targetComment.upvotes += 1;
+    } else {
+      targetComment.downvotes += 1;
+    }
+
+    if (voterId && targetComment.author.id !== voterId) {
+      const voter = findUserById(voterId);
+      createMockNotification(
+        targetComment.author.id,
+        type === 'upvote' ? NotificationType.COMMENT_UPVOTE : NotificationType.COMMENT_DOWNVOTE,
+        voterId,
+        targetComment.id,
+        'comment',
+        thread.id, // relatedEntityId is the threadId
+        type === 'upvote' ? 'notification.commentUpvoted' : 'notification.commentDownvoted',
+        { actorName: voter?.displayName || voter?.username || "Someone", threadTitle: thread.title }
+      );
+    }
+  }
   revalidatePath(`/t/${threadId}`);
 }
 
+
 export async function getThreadsAction(): Promise<Thread[]> {
-  // Return a deep copy to prevent direct mutation issues in components if they were to receive the raw array
   return JSON.parse(JSON.stringify(global.mockDataStore.threads || []));
 }
 
@@ -146,6 +344,11 @@ export async function getUserByUsernameAction(username: string): Promise<User | 
   return user ? JSON.parse(JSON.stringify(user)) : undefined;
 }
 
+export async function getUserByIdAction(userId: string): Promise<User | undefined> {
+  const user = (global.mockDataStore.users || []).find((u: User) => u.id === userId);
+  return user ? JSON.parse(JSON.stringify(user)) : undefined;
+}
+
 export async function getThreadsByAuthorUsernameAction(username: string): Promise<Thread[]> {
   const user = (global.mockDataStore.users || []).find((u: User) => u.username === username);
   if (!user) {
@@ -153,4 +356,78 @@ export async function getThreadsByAuthorUsernameAction(username: string): Promis
   }
   const userThreads = (global.mockDataStore.threads || []).filter((t: Thread) => t.author.id === user.id);
   return JSON.parse(JSON.stringify(userThreads));
+}
+
+export async function followUserAction(targetUserId: string, currentUserId: string): Promise<{ success: boolean, error?: string }> {
+  const targetUser = global.mockDataStore.users.find(u => u.id === targetUserId);
+  const currentUser = global.mockDataStore.users.find(u => u.id === currentUserId);
+
+  if (!targetUser || !currentUser) {
+    return { success: false, error: 'User not found.' };
+  }
+
+  if (currentUser.followingIds?.includes(targetUserId)) {
+    return { success: false, error: 'Already following this user.' };
+  }
+
+  currentUser.followingIds = [...(currentUser.followingIds || []), targetUserId];
+  targetUser.followerIds = [...(targetUser.followerIds || []), currentUserId];
+
+  createMockNotification(
+    targetUserId,
+    NotificationType.USER_FOLLOWED_YOU,
+    currentUserId,
+    currentUserId, // Entity is the user who followed
+    'user',
+    null,
+    'notification.userFollowedYou',
+    { actorName: currentUser.displayName || currentUser.username }
+  );
+  
+  revalidatePath(`/u/${targetUser.username}`);
+  revalidatePath(`/u/${currentUser.username}`);
+  return { success: true };
+}
+
+export async function unfollowUserAction(targetUserId: string, currentUserId: string): Promise<{ success: boolean, error?: string }> {
+  const targetUser = global.mockDataStore.users.find(u => u.id === targetUserId);
+  const currentUser = global.mockDataStore.users.find(u => u.id === currentUserId);
+
+  if (!targetUser || !currentUser) {
+    return { success: false, error: 'User not found.' };
+  }
+
+  currentUser.followingIds = (currentUser.followingIds || []).filter(id => id !== targetUserId);
+  targetUser.followerIds = (targetUser.followerIds || []).filter(id => id !== currentUserId);
+  
+  revalidatePath(`/u/${targetUser.username}`);
+  revalidatePath(`/u/${currentUser.username}`);
+  return { success: true };
+}
+
+export async function getNotificationsForUserAction(userId: string): Promise<Notification[]> {
+  const userNotifications = (global.mockDataStore.notifications || []).filter(n => n.userId === userId);
+  return JSON.parse(JSON.stringify(userNotifications));
+}
+
+export async function getUnreadNotificationCountAction(userId: string): Promise<number> {
+  const userNotifications = (global.mockDataStore.notifications || []).filter(n => n.userId === userId && !n.isRead);
+  return userNotifications.length;
+}
+
+export async function markNotificationAsReadAction(notificationId: string, userId: string): Promise<void> {
+  const notification = (global.mockDataStore.notifications || []).find(n => n.id === notificationId && n.userId === userId);
+  if (notification) {
+    notification.isRead = true;
+  }
+  revalidatePath('/notifications');
+}
+
+export async function markAllNotificationsAsReadAction(userId: string): Promise<void> {
+  (global.mockDataStore.notifications || []).forEach(n => {
+    if (n.userId === userId) {
+      n.isRead = true;
+    }
+  });
+  revalidatePath('/notifications');
 }

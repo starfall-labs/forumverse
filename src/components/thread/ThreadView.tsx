@@ -8,7 +8,7 @@ import { voteThreadAction } from '@/actions/threadActions';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { useTranslation } from '@/hooks/useTranslation';
-import ReactMarkdown from 'react-markdown'; // Added
+import ReactMarkdown from 'react-markdown'; 
 
 interface ThreadViewProps {
   thread: Thread;
@@ -17,8 +17,8 @@ interface ThreadViewProps {
 export function ThreadView({ thread }: ThreadViewProps) {
   const { t } = useTranslation();
 
-  const handleVote = async (itemId: string, type: 'upvote' | 'downvote') => {
-    await voteThreadAction(itemId, type);
+  const handleVote = async (itemId: string, type: 'upvote' | 'downvote', voterId?: string) => {
+    await voteThreadAction(itemId, type, voterId);
   };
 
   const getPrimaryAuthorName = (author: User): string => {
@@ -54,11 +54,8 @@ export function ThreadView({ thread }: ThreadViewProps) {
         </div>
 
         <div className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none text-foreground leading-relaxed">
-          {/* Replace direct content rendering with ReactMarkdown */}
           <ReactMarkdown
             components={{
-              // Add Tailwind classes to common Markdown elements
-              // You might want to expand this or use @tailwindcss/typography plugin for more comprehensive styling
               h1: ({node, ...props}) => <h1 className="text-3xl font-bold my-4 font-headline" {...props} />,
               h2: ({node, ...props}) => <h2 className="text-2xl font-semibold my-3 font-headline" {...props} />,
               h3: ({node, ...props}) => <h3 className="text-xl font-semibold my-2 font-headline" {...props} />,
@@ -71,8 +68,6 @@ export function ThreadView({ thread }: ThreadViewProps) {
               code: ({node, inline, className, children, ...props}) => {
                 const match = /language-(\w+)/.exec(className || '')
                 return !inline && match ? (
-                  // For block code, you might want a more sophisticated highlighter
-                  // For now, just a preformatted block
                   <pre className="bg-muted p-2 rounded-md my-2 overflow-x-auto"><code className={className} {...props}>{children}</code></pre>
                 ) : (
                   <code className="bg-muted/50 px-1 py-0.5 rounded-sm font-code text-sm" {...props}>{children}</code>

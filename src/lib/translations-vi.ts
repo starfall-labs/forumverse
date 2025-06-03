@@ -1,0 +1,148 @@
+
+// src/lib/translations-vi.ts
+import type { PREDEFINED_TRANSLATIONS_EN as EnglishTranslations } from './translations-en';
+
+// It's good practice to have a type for the translation map based on English keys
+// to ensure all keys are considered for translation.
+// However, for simplicity, we'll use Record<string, string>
+// type VietnameseTranslations = Record<keyof typeof EnglishTranslations, string>;
+
+export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
+  'navbar.createPost': 'Tạo Chủ đề',
+  'navbar.changeLanguage': 'Thay đổi ngôn ngữ',
+  'navbar.selectLanguage': 'Chọn Ngôn Ngữ',
+  'navbar.logout': 'Đăng xuất',
+  'navbar.login': 'Đăng nhập',
+  'navbar.signup': 'Đăng ký',
+  'navbar.myProfile': 'Hồ sơ của tôi',
+  'navbar.notifications': 'Thông báo',
+
+  'home.popularThreads': 'Chủ đề Nổi bật',
+  'home.createThreadButton': 'Tạo Chủ đề Mới',
+  'home.loadingThreads': 'Đang tải chủ đề...',
+  'home.noThreads': 'Chưa có chủ đề nào.',
+  'home.beTheFirst': 'Hãy là người đầu tiên bắt đầu một cuộc thảo luận!',
+
+  'loginPage.title': 'Chào mừng trở lại!',
+  'loginPage.description': 'Đăng nhập để tiếp tục vào ForumVerse.',
+  'loginPage.emailLabel': 'Email',
+  'loginPage.passwordLabel': 'Mật khẩu',
+  'loginPage.demoHint': 'Thử với: alice@example.com / password123',
+  'loginPage.loginButton': 'Đăng Nhập',
+  'loginPage.loggingInButton': 'Đang đăng nhập...',
+  'loginPage.signupPrompt': 'Chưa có tài khoản?',
+  'loginPage.signupLink': 'Đăng ký',
+
+  'signupPage.title': 'Tạo Tài Khoản',
+  'signupPage.description': 'Tham gia ForumVerse ngay hôm nay!',
+  'signupPage.emailLabel': 'Email',
+  'signupPage.usernameLabel': 'Tên người dùng',
+  'signupPage.displayNameLabel': 'Tên hiển thị (Tùy chọn)',
+  'signupPage.passwordLabel': 'Mật khẩu',
+  'signupPage.confirmPasswordLabel': 'Xác nhận Mật khẩu',
+  'signupPage.signupButton': 'Đăng Ký',
+  'signupPage.signingUpButton': 'Đang đăng ký...',
+  'signupPage.loginPrompt': 'Đã có tài khoản?',
+  'signupPage.loginLink': 'Đăng nhập',
+
+  'submitPage.title': 'Tạo chủ đề mới',
+  'submitPage.description': 'Chia sẻ suy nghĩ của bạn với cộng đồng ForumVerse.',
+  'submitPage.titleLabel': 'Tiêu đề',
+  'submitPage.titlePlaceholder': 'Nhập tiêu đề mô tả',
+  'submitPage.contentLabel': 'Nội dung',
+  'submitPage.contentPlaceholderMarkdown': 'Chia sẻ suy nghĩ của bạn (Hỗ trợ Markdown!)',
+  'submitPage.createButton': 'Tạo Chủ đề',
+  'submitPage.submittingButton': 'Đang gửi...',
+  'submitPage.loginPrompt': 'Vui lòng đăng nhập để tạo chủ đề.',
+
+  'notFoundPage.title': 'Không Tìm Thấy Trang',
+  'notFoundPage.description': "Rất tiếc! Trang bạn đang tìm kiếm dường như không tồn tại.",
+  'notFoundPage.homeButton': 'Quay Về Trang Chủ',
+  'notFoundPage.userNotFoundTitle': 'Không Tìm Thấy Người Dùng',
+  'notFoundPage.userNotFoundDescription': "Xin lỗi, chúng tôi không thể tìm thấy người dùng với tên đó.",
+
+  'threadPage.commentsHeading': 'Bình luận',
+
+  'commentSection.leaveComment': 'Để lại bình luận',
+  'commentSection.noComments': 'Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ suy nghĩ của bạn!',
+
+  'commentForm.replyPlaceholder': 'Viết một phản hồi...',
+  'commentForm.commentPlaceholder': 'Bạn nghĩ gì về điều này?',
+  'commentForm.loginPrompt': 'Vui lòng đăng nhập để bình luận.',
+  'commentForm.replyButton': 'Phản hồi',
+  'commentForm.replyingButton': 'Đang phản hồi...',
+  'commentForm.commentButton': 'Bình luận',
+  'commentForm.commentingButton': 'Đang bình luận...',
+
+  'summarizeButton.buttonText': 'Tóm tắt Chủ đề',
+  'summarizeButton.buttonLoadingText': 'Đang tóm tắt...',
+  'summarizeButton.dialogTitlePrefix': 'Tóm tắt của:',
+  'summarizeButton.dialogDescription': 'Tóm tắt các điểm chính do AI tạo:',
+  'summarizeButton.dialogLoadingSummary': 'Đang tải tóm tắt...',
+  'summarizeButton.dialogCloseButton': 'Đóng',
+
+  'threadItem.commentsLink': 'Bình luận',
+  'threadItem.postedBy': 'Đăng bởi',
+  'threadView.postedBy': 'Đăng bởi', 
+
+  'commentItem.replyButton': 'Phản hồi',
+
+  'toast.loginSuccessTitle': 'Đăng nhập thành công',
+  'toast.loginSuccessDescription': 'Chào mừng bạn trở lại!',
+  'toast.loginFailedTitle': 'Đăng nhập thất bại',
+  'toast.loginFailedDescription': "Email hoặc mật khẩu không hợp lệ. Thử 'alice@example.com' với 'password123'.",
+  'toast.signupSuccessTitle': 'Đăng ký thành công',
+  'toast.signupSuccessDescription': 'Chào mừng đến với ForumVerse! Bạn đã đăng nhập.',
+  'toast.signupFailedTitle': 'Đăng ký thất bại',
+  'toast.signupFailedDescription': 'Email hoặc tên người dùng này có thể đã được sử dụng hoặc đã xảy ra lỗi.',
+  'toast.authErrorTitle': 'Lỗi xác thực',
+  'toast.authErrorDescriptionCreatePost': 'Bạn phải đăng nhập để tạo chủ đề.',
+  'toast.authErrorDescriptionComment': 'Bạn phải đăng nhập để bình luận.',
+  'toast.errorCreatingPostTitle': 'Lỗi khi tạo chủ đề',
+  'toast.postCreatedTitle': 'Đã tạo chủ đề!',
+  'toast.postCreatedDescription': 'Chủ đề của bạn đã được tạo thành công.',
+  'toast.errorPostingCommentTitle': 'Lỗi khi đăng bình luận',
+  'toast.commentPostedTitle': 'Đã đăng bình luận!',
+  'toast.commentPostedDescription': 'Bình luận của bạn đã được thêm.',
+  'toast.summarizeCannotSummarizeTitle': 'Không thể tóm tắt',
+  'toast.summarizeCannotSummarizeDescription': 'Nội dung chủ đề trống.',
+  'toast.summarizeFailedTitle': 'Tóm tắt thất bại',
+  'toast.summarizeFailedDescription': 'Không thể tạo tóm tắt cho chủ đề này.',
+  'toast.followSuccess': 'Đã theo dõi {targetUsername}.',
+  'toast.unfollowSuccess': 'Đã bỏ theo dõi {targetUsername}.',
+  'toast.followError': 'Không thể theo dõi {targetUsername}.',
+  'toast.unfollowError': 'Không thể bỏ theo dõi {targetUsername}.',
+
+  'userProfile.about': 'Về',
+  'userProfile.memberSince': 'Thành viên từ:',
+  'userProfile.postsBy': "Chủ đề của",
+  'userProfile.noPosts': "Người dùng này chưa tạo chủ đề nào.",
+  'userProfile.followButton': 'Theo dõi',
+  'userProfile.unfollowButton': 'Bỏ theo dõi',
+  'userProfile.followingButton': 'Đang theo dõi',
+  'userProfile.editProfileButton': 'Sửa hồ sơ',
+
+  'notifications.pageTitle': 'Thông báo',
+  'notifications.noNotifications': 'Bạn chưa có thông báo nào.',
+  'notifications.markAllReadButton': 'Đánh dấu tất cả đã đọc',
+  'notifications.markUnread': 'Chưa đọc',
+  'notification.newThreadFromFollowedUser': '{actorName} đã đăng chủ đề mới: "{threadTitle}"',
+  'notification.newCommentOnThread': '{actorName} đã bình luận về chủ đề của bạn: "{threadTitle}"',
+  'notification.newReplyToComment': '{actorName} đã trả lời bình luận của bạn về "{threadTitle}"',
+  'notification.userFollowedYou': '{actorName} đã bắt đầu theo dõi bạn.',
+  'notification.threadUpvoted': '{actorName} đã thích chủ đề của bạn: "{threadTitle}"',
+  'notification.threadDownvoted': '{actorName} đã không thích chủ đề của bạn: "{threadTitle}"',
+  'notification.commentUpvoted': '{actorName} đã thích bình luận của bạn về "{threadTitle}"',
+  'notification.commentDownvoted': '{actorName} đã không thích bình luận của bạn về "{threadTitle}"',
+  'notification.default.new_thread_from_followed_user': 'Người bạn theo dõi đã đăng chủ đề mới.',
+  'notification.default.new_comment_on_thread': 'Có bình luận mới về chủ đề của bạn.',
+  'notification.default.new_reply_to_comment': 'Có trả lời mới cho bình luận của bạn.',
+  'notification.default.user_followed_you': 'Có người đã bắt đầu theo dõi bạn.',
+  'notification.default.thread_upvote': 'Chủ đề của bạn nhận được một lượt thích.',
+  'notification.default.thread_downvote': 'Chủ đề của bạn nhận được một lượt không thích.',
+  'notification.default.comment_upvote': 'Bình luận của bạn nhận được một lượt thích.',
+  'notification.default.comment_downvote': 'Bình luận của bạn nhận được một lượt không thích.',
+};
+
+// Re-export EN translations from here too if LanguageContext imports from this file only
+export { PREDEFINED_TRANSLATIONS_EN } from './translations-en';

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
-import { LogIn, LogOut, PlusCircle, UserCircle2, Languages, User as UserIcon } from 'lucide-react';
+import { LogIn, LogOut, PlusCircle, UserCircle2, Languages, User as UserIcon, Bell } from 'lucide-react'; // Added Bell
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,18 +16,35 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react'; // Added useEffect, useState
 import { LanguageContext, SUPPORTED_LANGUAGES } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
-
+import { getUnreadNotificationCountAction } from '@/actions/threadActions'; // Added
+import { usePathname } from 'next/navigation'; // Added
 
 export function Navbar() {
   const { user, logout, isLoading } = useAuth();
   const langContext = useContext(LanguageContext);
   const { t } = useTranslation();
+  const pathname = usePathname(); // Get current path
+
+  const [unreadCount, setUnreadCount] = useState(0); // State for unread notifications
+
+  useEffect(() => {
+    async function fetchUnreadCount() {
+      if (user) {
+        const count = await getUnreadNotificationCountAction(user.id);
+        setUnreadCount(count);
+      } else {
+        setUnreadCount(0);
+      }
+    }
+    fetchUnreadCount();
+    // Re-fetch when user changes or when navigating to/from notifications page
+  }, [user, pathname]);
+
 
   if (!langContext) {
-    // This should not happen if Navbar is rendered within LanguageProvider
     return null; 
   }
   const { currentLanguage, setLanguage } = langContext;
@@ -62,9 +79,24 @@ export function Navbar() {
           <Link href="/submit" passHref>
             <Button variant="outline">
               <PlusCircle className="mr-2 h-4 w-4" />
-              {t('navbar.createPost', 'Create Post')}
+              {t('navbar.createPost', 'Create Thread')}
             </Button>
           </Link>
+
+          {user && (
+            <Link href="/notifications" passHref>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+                <span className="sr-only">{t('navbar.notifications', 'Notifications')}</span>
+              </Button>
+            </Link>
+          )}
+
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

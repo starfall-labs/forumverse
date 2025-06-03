@@ -18,8 +18,8 @@ interface ThreadItemProps {
 export function ThreadItem({ thread }: ThreadItemProps) {
   const { t } = useTranslation();
 
-  const handleVote = async (itemId: string, type: 'upvote' | 'downvote') => {
-    await voteThreadAction(itemId, type);
+  const handleVote = async (itemId: string, type: 'upvote' | 'downvote', voterId?: string) => {
+    await voteThreadAction(itemId, type, voterId);
   };
 
   const primaryAuthorName = thread.author.displayName || thread.author.username;

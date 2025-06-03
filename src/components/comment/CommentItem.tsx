@@ -24,8 +24,8 @@ export function CommentItem({ comment, threadId, depth = 0 }: CommentItemProps) 
   const [showReplyForm, setShowReplyForm] = useState(false);
   const { t } = useTranslation();
 
-  const handleVote = async (itemId: string, type: 'upvote' | 'downvote') => {
-    await voteCommentAction(threadId, itemId, type);
+  const handleVote = async (itemId: string, type: 'upvote' | 'downvote', voterId?: string) => {
+    await voteCommentAction(threadId, itemId, type, voterId);
   };
 
   const cardPaddingLeft = depth > 0 ? `pl-${2 + depth * 4}` : 'pl-2';
