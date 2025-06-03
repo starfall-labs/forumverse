@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
-import { LogIn, LogOut, PlusCircle, UserCircle2 } from 'lucide-react';
+import { LogIn, LogOut, PlusCircle, UserCircle2, Languages } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,10 +13,24 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
+import { useContext } from 'react';
+import { LanguageContext, SUPPORTED_LANGUAGES } from '@/contexts/LanguageContext';
+import { useTranslation } from '@/hooks/useTranslation';
+
 
 export function Navbar() {
   const { user, logout, isLoading } = useAuth();
+  const langContext = useContext(LanguageContext);
+  const { t } = useTranslation();
+
+  if (!langContext) {
+    // This should not happen if Navbar is rendered within LanguageProvider
+    return null; 
+  }
+  const { currentLanguage, setLanguage } = langContext;
 
   const getAvatarFallback = () => {
     if (!user) return '';
@@ -48,9 +62,30 @@ export function Navbar() {
           <Link href="/submit" passHref>
             <Button variant="outline">
               <PlusCircle className="mr-2 h-4 w-4" />
-              Create Post
+              {t('navbar.createPost', 'Create Post')}
             </Button>
           </Link>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Languages className="h-4 w-4" />
+                <span className="sr-only">{t('navbar.changeLanguage', 'Change language')}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>{t('navbar.selectLanguage', 'Select Language')}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup value={currentLanguage} onValueChange={setLanguage}>
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <DropdownMenuRadioItem key={lang.code} value={lang.code}>
+                    {lang.name}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {isLoading ? (
             <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
           ) : user ? (
@@ -75,7 +110,7 @@ export function Navbar() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
+                  <span>{t('navbar.logout', 'Log out')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -83,12 +118,12 @@ export function Navbar() {
             <>
               <Link href="/login" passHref>
                 <Button variant="ghost">
-                  <LogIn className="mr-2 h-4 w-4" /> Login
+                  <LogIn className="mr-2 h-4 w-4" /> {t('navbar.login', 'Login')}
                 </Button>
               </Link>
               <Link href="/signup" passHref>
                 <Button>
-                  <UserCircle2 className="mr-2 h-4 w-4" /> Sign Up
+                  <UserCircle2 className="mr-2 h-4 w-4" /> {t('navbar.signup', 'Sign Up')}
                 </Button>
               </Link>
             </>

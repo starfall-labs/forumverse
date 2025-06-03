@@ -1,8 +1,10 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from './providers';
 import { Navbar } from '@/components/shared/Navbar';
 import { Toaster } from "@/components/ui/toaster";
+import { LanguageProvider } from '@/contexts/LanguageContext'; // Added
 
 export const metadata: Metadata = {
   title: 'ForumVerse',
@@ -23,11 +25,13 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col" suppressHydrationWarning={true}>
         <Providers>
-          <Navbar />
-          <main className="flex-grow container mx-auto px-4 py-8">
-            {children}
-          </main>
-          <Toaster />
+          <LanguageProvider> {/* Added */}
+            <Navbar />
+            <main className="flex-grow container mx-auto px-4 py-8">
+              {children}
+            </main>
+            <Toaster />
+          </LanguageProvider> {/* Added */}
         </Providers>
       </body>
     </html>
