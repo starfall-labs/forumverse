@@ -3,22 +3,23 @@
 
 import type React from 'react';
 import { createContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { translateText, type TranslateTextInput } from '@/ai/flows/translate-text-flow';
+// Removed: import { translateText, type TranslateTextInput } from '@/ai/flows/translate-text-flow';
 
-type Translations = Record<string, Record<string, string>>; // { langCode: { key: translation } }
+type TranslationMap = Record<string, string>; // { key: translation }
+type AllTranslations = Record<string, TranslationMap>; // { langCode: TranslationMap }
 
 interface LanguageContextType {
   currentLanguage: string;
   setLanguage: (language: string) => void;
-  getTranslation: (key: string, defaultText: string) => Promise<string>;
-  translations: Translations;
+  getTranslation: (key: string, defaultText: string) => string; // Now synchronous
+  translations: AllTranslations; // Using the new type
   isInitializing: boolean;
 }
 
 export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 const CURRENT_LANGUAGE_KEY = 'forumverse_current_language';
-const TRANSLATIONS_KEY = 'forumverse_translations';
+// Removed: const TRANSLATIONS_KEY = 'forumverse_translations';
 
 const SUPPORTED_LANGUAGES = [
   { code: 'en', name: 'English' },
@@ -27,12 +28,46 @@ const SUPPORTED_LANGUAGES = [
 ];
 export { SUPPORTED_LANGUAGES };
 
+// Predefined translations
+const PREDEFINED_TRANSLATIONS: AllTranslations = {
+  en: {
+    // English defaults are usually the 'defaultText' passed to t()
+    // but we can define them here for consistency or if keys are abstract
+    'navbar.createPost': 'Create Post',
+    'navbar.changeLanguage': 'Change language',
+    'navbar.selectLanguage': 'Select Language',
+    'navbar.logout': 'Log out',
+    'navbar.login': 'Login',
+    'navbar.signup': 'Sign Up',
+    'home.popularThreads': 'Popular Threads',
+    'home.createThreadButton': 'Create New Thread',
+    'home.loadingThreads': 'Loading threads...',
+    'home.noThreads': 'No threads yet.',
+    'home.beTheFirst': 'Be the first to start a discussion!',
+  },
+  vi: {
+    'navbar.createPost': 'Tạo Bài Viết',
+    'navbar.changeLanguage': 'Thay đổi ngôn ngữ',
+    'navbar.selectLanguage': 'Chọn Ngôn Ngữ',
+    'navbar.logout': 'Đăng xuất',
+    'navbar.login': 'Đăng nhập',
+    'navbar.signup': 'Đăng ký',
+    'home.popularThreads': 'Chủ đề Nổi bật',
+    'home.createThreadButton': 'Tạo Chủ đề Mới',
+    'home.loadingThreads': 'Đang tải chủ đề...',
+    'home.noThreads': 'Chưa có chủ đề nào.',
+    'home.beTheFirst': 'Hãy là người đầu tiên bắt đầu một cuộc thảo luận!',
+  }
+};
+
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentLanguage, setCurrentLanguageState] = useState<string>('en');
-  const [translations, setTranslations] = useState<Translations>({});
+  // Initialize translations with predefined ones.
+  // In a larger app, these might come from JSON files.
+  const [translations, setTranslations] = useState<AllTranslations>(PREDEFINED_TRANSLATIONS);
   const [isInitializing, setIsInitializing] = useState(true);
-  const [pendingTranslations, setPendingTranslations] = useState<Record<string, Promise<string>>>({});
+  // Removed: const [pendingTranslations, setPendingTranslations] = useState<Record<string, Promise<string>>>({});
 
   useEffect(() => {
     try {
@@ -42,11 +77,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       } else {
         localStorage.setItem(CURRENT_LANGUAGE_KEY, 'en'); // Default to English if invalid or not set
       }
-
-      const storedTranslations = localStorage.getItem(TRANSLATIONS_KEY);
-      if (storedTranslations) {
-        setTranslations(JSON.parse(storedTranslations));
-      }
+      // Removed loading translations from localStorage as they are predefined now
     } catch (error) {
       console.error("Failed to load language settings from localStorage", error);
     } finally {
@@ -67,60 +98,24 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   }, []);
 
-  const saveTranslationsToStorage = useCallback((newTranslations: Translations) => {
-     try {
-        localStorage.setItem(TRANSLATIONS_KEY, JSON.stringify(newTranslations));
-      } catch (error) {
-        console.error("Failed to save translations to localStorage", error);
-      }
-  }, []);
+  // Removed: saveTranslationsToStorage useCallback
 
-  const getTranslation = useCallback(async (key: string, defaultText: string): Promise<string> => {
+  const getTranslation = useCallback((key: string, defaultText: string): string => {
+    if (isInitializing) return defaultText; // Still return default if not initialized
     if (currentLanguage === 'en') {
-      return defaultText;
+      // Optionally, you can lookup in PREDEFINED_TRANSLATIONS.en as well
+      // or just rely on defaultText being the English version.
+      return PREDEFINED_TRANSLATIONS.en[key] || defaultText;
     }
 
-    const cachedTranslation = translations[currentLanguage]?.[key];
-    if (cachedTranslation) {
-      return cachedTranslation;
+    const langTranslations = translations[currentLanguage];
+    if (langTranslations && langTranslations[key]) {
+      return langTranslations[key];
     }
-
-    const pendingKey = `${currentLanguage}:${key}`;
-    if (pendingTranslations[pendingKey]) {
-      return pendingTranslations[pendingKey];
-    }
-
-    const translationPromise = (async () => {
-      try {
-        const result = await translateText({ textToTranslate: defaultText, targetLanguageCode: currentLanguage });
-        const newTranslation = result.translatedText;
-
-        // Defer the state update to the next microtask
-        Promise.resolve().then(() => {
-          setTranslations(prev => {
-            const updatedLangTranslations = { ...prev[currentLanguage], [key]: newTranslation };
-            const newTranslations = { ...prev, [currentLanguage]: updatedLangTranslations };
-            saveTranslationsToStorage(newTranslations);
-            return newTranslations;
-          });
-        });
-        return newTranslation;
-      } catch (error) {
-        console.error(`Error translating "${key}" to ${currentLanguage}:`, error);
-        return defaultText; // Fallback to default text on error
-      } finally {
-        setPendingTranslations(prev => {
-          const updated = { ...prev };
-          delete updated[pendingKey];
-          return updated;
-        });
-      }
-    })();
-
-    setPendingTranslations(prev => ({ ...prev, [pendingKey]: translationPromise }));
-    return translationPromise;
-
-  }, [currentLanguage, translations, saveTranslationsToStorage, pendingTranslations]);
+    
+    // Fallback to English or defaultText if translation for the key is missing in the current language
+    return PREDEFINED_TRANSLATIONS.en[key] || defaultText;
+  }, [currentLanguage, translations, isInitializing]);
 
 
   if (isInitializing) {
