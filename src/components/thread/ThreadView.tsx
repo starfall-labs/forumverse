@@ -1,3 +1,4 @@
+'use client';
 
 import type { Thread, User } from '@/lib/types';
 import { UserAvatar } from '@/components/shared/UserAvatar';
