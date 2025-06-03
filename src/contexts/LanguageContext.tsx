@@ -95,11 +95,14 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
         const result = await translateText({ textToTranslate: defaultText, targetLanguageCode: currentLanguage });
         const newTranslation = result.translatedText;
 
-        setTranslations(prev => {
-          const updatedLangTranslations = { ...prev[currentLanguage], [key]: newTranslation };
-          const newTranslations = { ...prev, [currentLanguage]: updatedLangTranslations };
-          saveTranslationsToStorage(newTranslations);
-          return newTranslations;
+        // Defer the state update to the next microtask
+        Promise.resolve().then(() => {
+          setTranslations(prev => {
+            const updatedLangTranslations = { ...prev[currentLanguage], [key]: newTranslation };
+            const newTranslations = { ...prev, [currentLanguage]: updatedLangTranslations };
+            saveTranslationsToStorage(newTranslations);
+            return newTranslations;
+          });
         });
         return newTranslation;
       } catch (error) {

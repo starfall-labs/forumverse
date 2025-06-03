@@ -6,7 +6,7 @@ import { LanguageContext } from '@/contexts/LanguageContext';
 
 interface UseTranslationResult {
   t: (key: string, defaultText: string) => string;
-  loadingKey: string | null;
+  loadingKey: string | null; // Represents a key whose translation is actively being fetched by this hook instance
   currentLanguage: string;
 }
 
@@ -17,37 +17,36 @@ export const useTranslation = (): UseTranslationResult => {
   }
 
   const { currentLanguage, getTranslation, translations, isInitializing } = context;
-  // This local state is used to trigger re-renders when a specific translation is loaded.
-  const [, setForceUpdate] = useState({});
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
 
   const translate = (key: string, defaultText: string): string => {
-    if (isInitializing) return defaultText; // Or a loading placeholder like "..."
+    if (isInitializing) return defaultText; 
     if (currentLanguage === 'en') return defaultText;
 
     const cached = translations[currentLanguage]?.[key];
     if (cached) return cached;
 
-    // If not cached, request translation and return default text or placeholder for now
-    // The actual update will happen once getTranslation resolves and updates context
-    if (loadingKey !== key) { // Avoid multiple requests for the same key while loading
+    // If not cached, request translation.
+    // The loadingKey state here is mostly to signal to *this specific hook instance*
+    // if it has initiated a fetch for *this specific key* in the current render cycle.
+    // The LanguageContext handles broader pending state.
+    if (loadingKey !== key) { 
       setLoadingKey(key);
       getTranslation(key, defaultText)
-        // Removed setForceUpdate({}) from here.
-        // The useEffect below, which depends on `translations`, will handle re-rendering.
         .finally(() => {
-          setLoadingKey(null);
+          // Only clear loadingKey if it's still the one this promise was for.
+          // This helps if multiple t() calls happen rapidly for different keys.
+          setLoadingKey(prevLoadingKey => (prevLoadingKey === key ? null : prevLoadingKey));
         });
     }
-    return defaultText; // Show default text while loading
+    // Always return defaultText while the actual translation is loading.
+    // The component will re-render once LanguageContext updates `translations`.
+    return defaultText; 
   };
 
-  // Effect to re-render components when translations or language change globally
-  useEffect(() => {
-    setForceUpdate({});
-  }, [translations, currentLanguage]);
-
+  // Components using this hook will re-render when `translations` or `currentLanguage`
+  // from the context changes, due to the nature of `useContext`.
+  // No explicit forceUpdate or useEffect for that purpose is needed here.
 
   return { t: translate, loadingKey, currentLanguage };
 };
-
