@@ -17,6 +17,10 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'home.loadingThreads': 'Loading threads...',
   'home.noThreads': 'No threads yet.',
   'home.beTheFirst': 'Be the first to start a discussion!',
+  'home.sortBy': 'Sort by',
+  'home.sort.popular': 'Popular',
+  'home.sort.newest': 'Newest',
+  'home.sort.oldest': 'Oldest',
 
   'loginPage.title': 'Welcome Back!',
   'loginPage.description': 'Log in to continue to ForumVerse.',

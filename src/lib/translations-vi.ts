@@ -20,6 +20,10 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
   'home.loadingThreads': 'Đang tải chủ đề...',
   'home.noThreads': 'Chưa có chủ đề nào.',
   'home.beTheFirst': 'Hãy là người đầu tiên bắt đầu một cuộc thảo luận!',
+  'home.sortBy': 'Sắp xếp theo',
+  'home.sort.popular': 'Phổ biến',
+  'home.sort.newest': 'Mới nhất',
+  'home.sort.oldest': 'Cũ nhất',
 
   'loginPage.title': 'Chào mừng trở lại!',
   'loginPage.description': 'Đăng nhập để tiếp tục vào ForumVerse.',
