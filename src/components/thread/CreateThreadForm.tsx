@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { createThreadAction } from '@/actions/threadActions';
 import { useToast } from "@/hooks/use-toast";
 import { useState } from 'react';
+import Link from 'next/link';
 
 const formSchema = z.object({
   title: z.string().min(5, { message: 'Title must be at least 5 characters.' }).max(150, { message: 'Title must be at most 150 characters.' }),
