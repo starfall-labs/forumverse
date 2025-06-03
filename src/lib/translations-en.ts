@@ -9,6 +9,7 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'navbar.signup': 'Sign Up',
   'navbar.myProfile': 'My Profile',
   'navbar.notifications': 'Notifications',
+  'navbar.adminPage': 'Admin Page',
 
   'home.popularThreads': 'Popular Threads',
   'home.createThreadButton': 'Create New Thread',
@@ -106,7 +107,6 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'toast.followError': 'Could not follow {targetUsername}.',
   'toast.unfollowError': 'Could not unfollow {targetUsername}.',
 
-
   'userProfile.about': 'About',
   'userProfile.memberSince': 'Member since:',
   'userProfile.postsBy': "Threads by",
@@ -115,7 +115,6 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'userProfile.unfollowButton': 'Unfollow',
   'userProfile.followingButton': 'Following',
   'userProfile.editProfileButton': 'Edit Profile',
-
 
   'notifications.pageTitle': 'Notifications',
   'notifications.noNotifications': "You don't have any notifications yet.",
@@ -137,6 +136,28 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'notification.default.thread_downvote': 'Your thread received a downvote.',
   'notification.default.comment_upvote': 'Your comment received an upvote.',
   'notification.default.comment_downvote': 'Your comment received a downvote.',
-};
 
-    
+  'adminPage.title': 'Admin Dashboard',
+  'adminPage.accessDeniedTitle': 'Access Denied',
+  'adminPage.accessDeniedDescription': 'You do not have permission to view this page.',
+  'adminPage.tabs.users': 'Manage Users',
+  'adminPage.tabs.threads': 'Manage Threads',
+  'adminPage.usersTable.title': 'All Users',
+  'adminPage.usersTable.description': 'Overview of all registered users.',
+  'adminPage.usersTable.username': 'Username',
+  'adminPage.usersTable.displayName': 'Display Name',
+  'adminPage.usersTable.email': 'Email',
+  'adminPage.usersTable.joined': 'Joined',
+  'adminPage.usersTable.role': 'Role',
+  'adminPage.usersTable.adminRole': 'Admin',
+  'adminPage.usersTable.userRole': 'User',
+  'adminPage.usersTable.noUsers': 'No users found.',
+  'adminPage.threadsTable.title': 'All Threads',
+  'adminPage.threadsTable.description': 'Overview of all created threads.',
+  'adminPage.threadsTable.titleHeader': 'Title',
+  'adminPage.threadsTable.author': 'Author',
+  'adminPage.threadsTable.createdAt': 'Created At',
+  'adminPage.threadsTable.comments': 'Comments',
+  'adminPage.threadsTable.score': 'Score',
+  'adminPage.threadsTable.noThreads': 'No threads found.',
+};

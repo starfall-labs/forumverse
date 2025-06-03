@@ -8,15 +8,16 @@ import { PREDEFINED_TRANSLATIONS_EN } from '@/lib/translations-en'; // For gener
 
 // Initialize global mock data store if it doesn't exist.
 if (typeof global.mockDataStore === 'undefined') {
-  const initialUsersWithFollow = initialMockUsers.map(u => ({
+  const initialUsersWithFollowAndAdmin = initialMockUsers.map(u => ({
     ...u,
     followingIds: u.followingIds || [],
     followerIds: u.followerIds || [],
+    isAdmin: u.isAdmin || false,
   }));
 
   global.mockDataStore = {
     threads: JSON.parse(JSON.stringify(initialMockThreads)) as Thread[],
-    users: JSON.parse(JSON.stringify(initialUsersWithFollow)) as User[],
+    users: JSON.parse(JSON.stringify(initialUsersWithFollowAndAdmin)) as User[],
     notifications: [] as Notification[], // Initialize notifications
   };
 }
@@ -400,4 +401,8 @@ export async function markAllNotificationsAsReadAction(userId: string): Promise<
   revalidatePath('/notifications');
 }
 
-    
+// Admin Actions
+export async function getAllUsersForAdminAction(): Promise<User[]> {
+  // In a real app, this would have an authorization check
+  return JSON.parse(JSON.stringify(global.mockDataStore.users || []));
+}

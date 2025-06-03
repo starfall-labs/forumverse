@@ -21,6 +21,7 @@ interface AuthContextType {
   signup: (data: SignupData) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
+  // isAdmin: boolean; // Removed: isAdmin will be part of the user object
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,28 +51,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const usersStr = localStorage.getItem(FAKE_USERS_STORAGE_KEY);
       if (usersStr) {
         const parsedUsers = JSON.parse(usersStr) as StoredUser[];
-        // Ensure initialMockUsers are added if not present in localStorage for demo purposes
         const allUsersMap = new Map(parsedUsers.map(u => [u.email, u]));
         initialMockUsers.forEach(mockUser => {
           if (!allUsersMap.has(mockUser.email)) {
-            allUsersMap.set(mockUser.email, { ...mockUser, password: 'password123' }); // Add mock password for login
+            allUsersMap.set(mockUser.email, { ...mockUser, password: 'password123', isAdmin: mockUser.isAdmin || false });
+          } else {
+            // Ensure existing users also have isAdmin flag correctly from initialMockUsers
+             const existingUser = allUsersMap.get(mockUser.email)!;
+             const initialMockEquivalent = initialMockUsers.find(imu => imu.email === existingUser.email);
+             if (initialMockEquivalent && existingUser.isAdmin !== initialMockEquivalent.isAdmin) {
+                allUsersMap.set(mockUser.email, {...existingUser, isAdmin: initialMockEquivalent.isAdmin });
+             }
           }
         });
         const updatedUsers = Array.from(allUsersMap.values());
-        if (usersStr !== JSON.stringify(updatedUsers)) { // Avoid rewriting if no changes
+        if (usersStr !== JSON.stringify(updatedUsers)) { 
             saveStoredUsers(updatedUsers);
         }
         return updatedUsers;
       } else {
-        // Initialize with initialMockUsers if localStorage is empty
-        const initialUsersWithPassword = initialMockUsers.map(u => ({ ...u, password: 'password123' }));
-        saveStoredUsers(initialUsersWithPassword);
-        return initialUsersWithPassword;
+        const initialUsersWithDetails = initialMockUsers.map(u => ({ ...u, password: 'password123', isAdmin: u.isAdmin || false }));
+        saveStoredUsers(initialUsersWithDetails);
+        return initialUsersWithDetails;
       }
     } catch {
-      const initialUsersWithPassword = initialMockUsers.map(u => ({ ...u, password: 'password123' }));
-      saveStoredUsers(initialUsersWithPassword);
-      return initialUsersWithPassword;
+      const initialUsersWithDetails = initialMockUsers.map(u => ({ ...u, password: 'password123', isAdmin: u.isAdmin || false }));
+      saveStoredUsers(initialUsersWithDetails);
+      return initialUsersWithDetails;
     }
   };
 
@@ -86,17 +92,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = useCallback(async (email: string, password?: string): Promise<boolean> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500)); 
 
     const storedUsers = getStoredUsers();
     const userToLogin = storedUsers.find(u => u.email === email && u.password === password);
 
-
     if (userToLogin) {
       const { password: _p, ...userWithoutPassword } = userToLogin;
-      setUser(userWithoutPassword);
+      // Ensure isAdmin flag is correctly set from the source
+      const finalUserObject = { ...userWithoutPassword, isAdmin: userToLogin.isAdmin || false };
+      setUser(finalUserObject);
       try {
-        localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(userWithoutPassword));
+        localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(finalUserObject));
       } catch (error) {
         console.error("Failed to save current user to localStorage", error);
       }
@@ -109,32 +116,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = useCallback(async (data: SignupData): Promise<boolean> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500)); 
 
     const storedUsers = getStoredUsers();
     if (storedUsers.find(u => u.email === data.email || u.username === data.username)) {
       setIsLoading(false);
-      return false; // User email or username already exists
+      return false; 
     }
 
     const newUser: StoredUser = {
       id: `user${Date.now()}`,
       email: data.email,
       username: data.username,
-      displayName: data.displayName || data.username, // Default displayName to username if not provided
-      password: data.password, // Store password for mock login
+      displayName: data.displayName || data.username, 
+      password: data.password, 
       avatarUrl: `https://placehold.co/40x40.png?text=${(data.displayName || data.username).charAt(0).toUpperCase()}`,
       createdAt: new Date().toISOString(),
+      isAdmin: false, // New users are not admins by default
     };
 
     saveStoredUsers([...storedUsers, newUser]);
 
-    // Also add to the global in-memory store for current session consistency if needed by other parts
     if (global.mockDataStore && global.mockDataStore.users) {
         const { password: _p, ...userForGlobalStore } = newUser;
         global.mockDataStore.users.push(userForGlobalStore);
     }
-
 
     const { password: _p, ...userWithoutPassword } = newUser;
     setUser(userWithoutPassword);

@@ -11,6 +11,7 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
   'navbar.signup': 'Đăng ký',
   'navbar.myProfile': 'Hồ sơ của tôi',
   'navbar.notifications': 'Thông báo',
+  'navbar.adminPage': 'Trang Admin',
 
   'home.popularThreads': 'Chủ đề Nổi bật',
   'home.createThreadButton': 'Tạo Chủ đề Mới',
@@ -137,9 +138,31 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
   'notification.default.thread_downvote': 'Chủ đề của bạn nhận được một lượt không thích.',
   'notification.default.comment_upvote': 'Bình luận của bạn nhận được một lượt thích.',
   'notification.default.comment_downvote': 'Bình luận của bạn nhận được một lượt không thích.',
+
+  'adminPage.title': 'Bảng Điều Khiển Admin',
+  'adminPage.accessDeniedTitle': 'Truy Cập Bị Từ Chối',
+  'adminPage.accessDeniedDescription': 'Bạn không có quyền xem trang này.',
+  'adminPage.tabs.users': 'Quản lý Người dùng',
+  'adminPage.tabs.threads': 'Quản lý Chủ đề',
+  'adminPage.usersTable.title': 'Tất cả Người dùng',
+  'adminPage.usersTable.description': 'Tổng quan về tất cả người dùng đã đăng ký.',
+  'adminPage.usersTable.username': 'Tên người dùng',
+  'adminPage.usersTable.displayName': 'Tên hiển thị',
+  'adminPage.usersTable.email': 'Email',
+  'adminPage.usersTable.joined': 'Tham gia',
+  'adminPage.usersTable.role': 'Vai trò',
+  'adminPage.usersTable.adminRole': 'Admin',
+  'adminPage.usersTable.userRole': 'Người dùng',
+  'adminPage.usersTable.noUsers': 'Không tìm thấy người dùng nào.',
+  'adminPage.threadsTable.title': 'Tất cả Chủ đề',
+  'adminPage.threadsTable.description': 'Tổng quan về tất cả các chủ đề đã tạo.',
+  'adminPage.threadsTable.titleHeader': 'Tiêu đề',
+  'adminPage.threadsTable.author': 'Tác giả',
+  'adminPage.threadsTable.createdAt': 'Ngày tạo',
+  'adminPage.threadsTable.comments': 'Bình luận',
+  'adminPage.threadsTable.score': 'Điểm',
+  'adminPage.threadsTable.noThreads': 'Không tìm thấy chủ đề nào.',
 };
 
 // Re-export EN translations from here too if LanguageContext imports from this file only
 export { PREDEFINED_TRANSLATIONS_EN } from './translations-en';
-
-    

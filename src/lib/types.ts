@@ -9,6 +9,7 @@ export type User = {
   followingIds?: string[]; // IDs of users this user is following
   followerIds?: string[];  // IDs of users following this user
   password?: string; // Only for mock data, not for real User object
+  isAdmin?: boolean; // Flag to identify admin users
 };
 
 export type Comment = {
