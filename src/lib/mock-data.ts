@@ -3,12 +3,12 @@ import type { User, Thread, Comment } from './types'; // Removed Notification ty
 
 // Initial Mock Users
 export const initialMockUsers: User[] = [
-  { id: 'user1', email: 'alice@example.com', username: 'alice', displayName: 'Alice Wonderland', password: 'password123', avatarUrl: 'https://placehold.co/40x40.png?text=A', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(), followingIds: ['user2'], followerIds: ['user3'], isAdmin: false },
-  { id: 'user2', email: 'bob@example.com', username: 'bob', displayName: 'Bob The Builder', password: 'password123', avatarUrl: 'https://placehold.co/40x40.png?text=B', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString(), followingIds: [], followerIds: ['user1'], isAdmin: false },
-  { id: 'user3', email: 'charlie@example.com', username: 'charlie', displayName: 'Charlie Brown', password: 'password123', avatarUrl: 'https://placehold.co/40x40.png?text=C', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), followingIds: ['user1'], followerIds: [], isAdmin: false },
-  { id: 'user4', email: 'diana@example.com', username: 'diana', displayName: 'Diana Prince', password: 'password123', avatarUrl: 'https://placehold.co/40x40.png?text=D', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(), followingIds: [], followerIds: [], isAdmin: false },
-  { id: 'user5', email: 'edward@example.com', username: 'edward', displayName: 'Edward Nygma', password: 'password123', avatarUrl: 'https://placehold.co/40x40.png?text=E', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), followingIds: [], followerIds: [], isAdmin: false },
-  { id: 'adminuser', email: 'admin@example.com', username: 'admin', displayName: 'Admin User', password: 'password123', avatarUrl: 'https://placehold.co/40x40.png?text=ADM', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 100).toISOString(), followingIds: [], followerIds: [], isAdmin: true },
+  { id: 'user1', email: 'alice@example.com', username: 'alice', displayName: 'Alice Wonderland', password: 'password123', avatarUrl: 'https://placehold.co/40x40.png?text=A', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(), followingIds: ['user2'], followerIds: ['user3'], isAdmin: false, isOwner: false },
+  { id: 'user2', email: 'bob@example.com', username: 'bob', displayName: 'Bob The Builder', password: 'password123', avatarUrl: 'https://placehold.co/40x40.png?text=B', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString(), followingIds: [], followerIds: ['user1'], isAdmin: false, isOwner: false },
+  { id: 'user3', email: 'charlie@example.com', username: 'charlie', displayName: 'Charlie Brown', password: 'password123', avatarUrl: 'https://placehold.co/40x40.png?text=C', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), followingIds: ['user1'], followerIds: [], isAdmin: false, isOwner: false },
+  { id: 'user4', email: 'diana@example.com', username: 'diana', displayName: 'Diana Prince', password: 'password123', avatarUrl: 'https://placehold.co/40x40.png?text=D', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(), followingIds: [], followerIds: [], isAdmin: false, isOwner: false },
+  { id: 'user5', email: 'edward@example.com', username: 'edward', displayName: 'Edward Nygma', password: 'password123', avatarUrl: 'https://placehold.co/40x40.png?text=E', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), followingIds: [], followerIds: [], isAdmin: false, isOwner: false },
+  { id: 'adminuser', email: 'admin@example.com', username: 'admin', displayName: 'Site Owner', password: 'password123', avatarUrl: 'https://placehold.co/40x40.png?text=OWN', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 100).toISOString(), followingIds: [], followerIds: [], isAdmin: true, isOwner: true },
 ];
 
 // Initial Mock Comments for Thread 1
@@ -108,7 +108,3 @@ export const initialMockThreads: Thread[] = [
     commentCount: 0,
   }
 ];
-
-// Note: The global.mockDataStore initialization and persistence logic
-// has been moved to threadActions.ts to centralize data management.
-// This file now only exports the initial raw data.

@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ShieldCheck, Users, FileText, AlertTriangle, Trash2, UserCog, UserCheck, UserX } from 'lucide-react';
+import { ShieldCheck, Users, FileText, AlertTriangle, Trash2, UserCog, UserCheck, UserX, Crown } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -39,7 +39,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [threads, setThreads] = useState<Thread[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
-  const [actionInProgress, setActionInProgress] = useState<string | null>(null); // userId for ongoing action
+  const [actionInProgress, setActionInProgress] = useState<string | null>(null); 
 
   const [dialogState, setDialogState] = useState<{
     isOpen: boolean;
@@ -49,7 +49,7 @@ export default function AdminPage() {
 
 
   const fetchData = useCallback(async () => {
-    if (currentUser?.isAdmin) {
+    if (currentUser?.isAdmin) { // Owner is also an admin
       setIsLoadingData(true);
       try {
         const [fetchedUsers, fetchedThreads] = await Promise.all([
@@ -69,7 +69,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!authLoading) {
-      if (!currentUser || !currentUser.isAdmin) {
+      if (!currentUser || !currentUser.isAdmin) { // Owner is also an admin
         router.replace('/'); 
       } else {
         fetchData();
@@ -78,15 +78,19 @@ export default function AdminPage() {
   }, [currentUser, authLoading, router, fetchData]);
 
   const handleSetAdminStatus = async (targetUserId: string, makeAdmin: boolean) => {
-    if (!currentUser?.id) return;
+    if (!currentUser?.id || !currentUser.isOwner) { // Only owner can change admin status
+         toast({ title: t('toast.errorTitle', "Error"), description: t('error.ownerOnlyAction', "Only an owner can perform this action."), variant: "destructive" });
+        setDialogState({ isOpen: false, actionType: null, targetUser: null });
+        return;
+    }
     setActionInProgress(targetUserId);
     const result = await setUserAdminStatusAction(targetUserId, makeAdmin, currentUser.id);
     setActionInProgress(null);
     if (result.success) {
       toast({ title: t('toast.successTitle', "Success"), description: makeAdmin ? t('toast.admin.userMadeAdmin', "User is now an admin.") : t('toast.admin.userRemovedAdmin', "User is no longer an admin.") });
-      fetchData(); // Refresh data
-      if (targetUserId === currentUser.id) { // If current user's status changed
-        router.refresh(); // Force refresh to update AuthContext related UI
+      fetchData(); 
+      if (targetUserId === currentUser.id && !makeAdmin) { // If owner demoted themselves (which should be prevented by action)
+        router.refresh(); 
       }
     } else {
       toast({ title: t('toast.errorTitle', "Error"), description: result.error || t('toast.admin.errorUpdatingAdminStatus', "Could not update admin status."), variant: "destructive" });
@@ -101,7 +105,7 @@ export default function AdminPage() {
     setActionInProgress(null);
     if (result.success) {
       toast({ title: t('toast.successTitle', "Success"), description: t('toast.admin.userDeleted', "User has been deleted.") });
-      fetchData(); // Refresh data
+      fetchData(); 
     } else {
       toast({ title: t('toast.errorTitle', "Error"), description: result.error || t('toast.admin.errorDeletingUser', "Could not delete user."), variant: "destructive" });
     }
@@ -130,7 +134,7 @@ export default function AdminPage() {
     );
   }
 
-  if (!currentUser?.isAdmin) {
+  if (!currentUser?.isAdmin) { // Also covers !isOwner
     return (
       <div className="container mx-auto py-12 px-4 text-center">
         <AlertTriangle className="h-16 w-16 text-destructive mx-auto mb-4" />
@@ -178,7 +182,7 @@ export default function AdminPage() {
                     <TableHead className="w-[200px] sm:w-[250px]">{t('adminPage.usersTable.email', 'Email')}</TableHead>
                     <TableHead className="hidden md:table-cell">{t('adminPage.usersTable.joined', 'Joined')}</TableHead>
                     <TableHead>{t('adminPage.usersTable.role', 'Role')}</TableHead>
-                    <TableHead className="text-right min-w-[180px]">{t('adminPage.usersTable.actions', 'Actions')}</TableHead>
+                    <TableHead className="text-right min-w-[200px]">{t('adminPage.usersTable.actions', 'Actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -193,7 +197,12 @@ export default function AdminPage() {
                       <TableCell className="max-w-[200px] sm:max-w-[250px] break-words">{u.email}</TableCell>
                       <TableCell className="hidden md:table-cell">{u.createdAt ? formatDistanceToNow(new Date(u.createdAt), { addSuffix: true }) : '-'}</TableCell>
                       <TableCell>
-                        {u.isAdmin ? (
+                        {u.isOwner ? (
+                            <Badge variant="default" className="bg-purple-600 hover:bg-purple-700 text-white whitespace-nowrap">
+                                <Crown className="mr-1 h-3.5 w-3.5" />
+                                {t('adminPage.usersTable.ownerRole', 'Owner')}
+                            </Badge>
+                        ) : u.isAdmin ? (
                           <Badge variant="default" className="bg-accent hover:bg-accent/90 whitespace-nowrap">
                             <UserCog className="mr-1 h-3.5 w-3.5" />
                             {t('adminPage.usersTable.adminRole', 'Admin')}
@@ -203,35 +212,47 @@ export default function AdminPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-right space-x-1">
-                        {u.isAdmin ? (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => openConfirmationDialog('removeAdmin', u)}
-                            disabled={actionInProgress === u.id || (currentUser.id === u.id && users.filter(usr => usr.isAdmin).length <= 1)}
-                            title={ (currentUser.id === u.id && users.filter(usr => usr.isAdmin).length <= 1) ? t('adminPage.usersTable.cannotRemoveLastAdminTooltip', 'Cannot remove the last admin.') : t('adminPage.usersTable.removeAdminButton', 'Remove Admin')}
-                            className="whitespace-nowrap"
-                          >
-                            <UserX className="mr-1 h-4 w-4" /> {t('adminPage.usersTable.removeAdminButtonShort', 'Demote')}
-                          </Button>
-                        ) : (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => openConfirmationDialog('makeAdmin', u)}
-                            disabled={actionInProgress === u.id}
-                            title={t('adminPage.usersTable.makeAdminButton', 'Make Admin')}
-                            className="whitespace-nowrap"
-                          >
-                             <UserCheck className="mr-1 h-4 w-4" /> {t('adminPage.usersTable.makeAdminButtonShort', 'Promote')}
-                          </Button>
+                        {currentUser.isOwner && !u.isOwner && ( // Only Owner can manage admin status of non-owners
+                          u.isAdmin ? (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => openConfirmationDialog('removeAdmin', u)}
+                              disabled={actionInProgress === u.id || u.id === currentUser.id} // Owner cannot demote self here
+                              title={u.id === currentUser.id ? t('adminPage.usersTable.cannotDemoteSelfTooltip', 'Owner cannot demote themselves.') : t('adminPage.usersTable.removeAdminButton', 'Remove Admin')}
+                              className="whitespace-nowrap"
+                            >
+                              <UserX className="mr-1 h-4 w-4" /> {t('adminPage.usersTable.removeAdminButtonShort', 'Demote')}
+                            </Button>
+                          ) : (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => openConfirmationDialog('makeAdmin', u)}
+                              disabled={actionInProgress === u.id}
+                              title={t('adminPage.usersTable.makeAdminButton', 'Make Admin')}
+                              className="whitespace-nowrap"
+                            >
+                               <UserCheck className="mr-1 h-4 w-4" /> {t('adminPage.usersTable.makeAdminButtonShort', 'Promote')}
+                            </Button>
+                          )
                         )}
                         <Button 
                           variant="destructive" 
                           size="sm" 
                           onClick={() => openConfirmationDialog('deleteUser', u)}
-                          disabled={actionInProgress === u.id || currentUser.id === u.id}
-                          title={currentUser.id === u.id ? t('adminPage.usersTable.cannotDeleteSelfTooltip', 'Cannot delete yourself.') : t('adminPage.usersTable.deleteUserButton', 'Delete User')}
+                          disabled={
+                            actionInProgress === u.id || 
+                            u.id === currentUser.id || // Cannot delete self
+                            u.isOwner || // Cannot delete owner
+                            (u.isAdmin && !currentUser.isOwner) // Admin cannot delete another admin
+                          }
+                          title={
+                            u.id === currentUser.id ? t('adminPage.usersTable.cannotDeleteSelfTooltip', 'Cannot delete yourself.') 
+                            : u.isOwner ? t('adminPage.usersTable.cannotDeleteOwnerTooltip', 'Cannot delete an owner.')
+                            : (u.isAdmin && !currentUser.isOwner) ? t('adminPage.usersTable.ownerOnlyDeleteAdminTooltip', 'Only an owner can delete an admin.')
+                            : t('adminPage.usersTable.deleteUserButton', 'Delete User')
+                          }
                           className="whitespace-nowrap"
                         >
                           <Trash2 className="mr-1 h-4 w-4" /> {t('adminPage.usersTable.deleteUserButtonShort', 'Delete')}

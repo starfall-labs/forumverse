@@ -174,6 +174,7 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'adminPage.usersTable.email': 'Email',
   'adminPage.usersTable.joined': 'Joined',
   'adminPage.usersTable.role': 'Role',
+  'adminPage.usersTable.ownerRole': 'Owner',
   'adminPage.usersTable.adminRole': 'Admin',
   'adminPage.usersTable.userRole': 'User',
   'adminPage.usersTable.actions': 'Actions',
@@ -186,6 +187,9 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'adminPage.usersTable.noUsers': 'No users found.',
   'adminPage.usersTable.cannotRemoveLastAdminTooltip': 'Cannot remove the last admin.',
   'adminPage.usersTable.cannotDeleteSelfTooltip': 'Cannot delete yourself.',
+  'adminPage.usersTable.cannotDemoteSelfTooltip': 'Owner cannot demote themselves.',
+  'adminPage.usersTable.cannotDeleteOwnerTooltip': 'Cannot delete an owner.',
+  'adminPage.usersTable.ownerOnlyDeleteAdminTooltip': 'Only an owner can delete an admin.',
   'adminPage.threadsTable.title': 'All Threads',
   'adminPage.threadsTable.description': 'Overview of all created threads.',
   'adminPage.threadsTable.titleHeader': 'Title',
@@ -251,20 +255,14 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'error.emailInUse': 'This email is already in use.',
   'error.userExists': 'User with this email or username already exists.',
   'error.passwordRequiredForDelete': 'Password is required to delete account.',
-};
+  'error.ownerOnlyAction': 'Unauthorized: Only an owner can perform this action.',
+  'error.cannotChangeOwnerStatus': "Cannot change the admin status of an owner.",
+  'error.ownerCannotDemoteSelf': 'Owner cannot remove their own admin status.',
+  'error.cannotDeleteOwner': 'Cannot delete an owner account.',
+  'error.ownerOnlyDeleteAdmin': 'Only an owner can delete an admin account.',
+  'error.cannotDeleteSelf': 'Cannot delete yourself.',
+  'error.adminOrOwnerOnlyAction': 'Unauthorized: Only admins or owners can perform this action.',
+  'error.ownerCannotDeleteSelfViaAccountPage': 'Owner account cannot be deleted this way. Contact support.',
 
-// Error messages (not directly in UI, but for action results)
-PREDEFINED_TRANSLATIONS_EN['error.incorrectCurrentPassword'] = 'Incorrect current password.';
+};
 PREDEFINED_TRANSLATIONS_EN['error.passwordsDontMatch'] = "Passwords don't match.";
-PREDEFINED_TRANSLATIONS_EN['error.emailInUse'] = 'This email is already in use.';
-PREDEFINED_TRANSLATIONS_EN['error.userNotFound'] = 'User not found.';
-PREDEFINED_TRANSLATIONS_EN['error.titleContentRequired'] = 'Title and content are required.';
-PREDEFINED_TRANSLATIONS_EN['error.commentEmpty'] = 'Comment content cannot be empty.';
-PREDEFINED_TRANSLATIONS_EN['error.threadNotFound'] = 'Thread not found.';
-PREDEFINED_TRANSLATIONS_EN['error.cannotFollowDeletedUser'] = 'Cannot follow this user.';
-PREDEFINED_TRANSLATIONS_EN['error.alreadyFollowing'] = 'Already following this user.';
-PREDEFINED_TRANSLATIONS_EN['error.adminOnlyAction'] = 'Unauthorized: Only admins can perform this action.';
-PREDEFINED_TRANSLATIONS_EN['error.cannotRemoveLastAdmin'] = 'Cannot remove the last admin.';
-PREDEFINED_TRANSLATIONS_EN['error.adminCannotDeleteSelf'] = 'Admin cannot delete themselves.';
-PREDEFINED_TRANSLATIONS_EN['error.userExists'] = 'User with this email or username already exists.';
-PREDEFINED_TRANSLATIONS_EN['error.passwordRequiredForDelete'] = 'Password is required to delete account.';

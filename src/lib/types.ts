@@ -10,6 +10,7 @@ export type User = {
   followerIds?: string[];  // IDs of users following this user
   password?: string; // Only for mock data, not for real User object
   isAdmin?: boolean; // Flag to identify admin users
+  isOwner?: boolean; // Flag to identify the owner
 };
 
 export interface UpdateProfileData {

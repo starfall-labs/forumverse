@@ -177,6 +177,7 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
   'adminPage.usersTable.email': 'Email',
   'adminPage.usersTable.joined': 'Tham gia',
   'adminPage.usersTable.role': 'Vai trò',
+  'adminPage.usersTable.ownerRole': 'Chủ sở hữu',
   'adminPage.usersTable.adminRole': 'Admin',
   'adminPage.usersTable.userRole': 'Người dùng',
   'adminPage.usersTable.actions': 'Hành động',
@@ -189,6 +190,9 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
   'adminPage.usersTable.noUsers': 'Không tìm thấy người dùng nào.',
   'adminPage.usersTable.cannotRemoveLastAdminTooltip': 'Không thể gỡ quyền admin cuối cùng.',
   'adminPage.usersTable.cannotDeleteSelfTooltip': 'Không thể tự xóa chính mình.',
+  'adminPage.usersTable.cannotDemoteSelfTooltip': 'Chủ sở hữu không thể tự gỡ quyền của mình.',
+  'adminPage.usersTable.cannotDeleteOwnerTooltip': 'Không thể xóa tài khoản chủ sở hữu.',
+  'adminPage.usersTable.ownerOnlyDeleteAdminTooltip': 'Chỉ chủ sở hữu mới có thể xóa quản trị viên.',
   'adminPage.threadsTable.title': 'Tất cả Chủ đề',
   'adminPage.threadsTable.description': 'Tổng quan về tất cả các chủ đề đã tạo.',
   'adminPage.threadsTable.titleHeader': 'Tiêu đề',
@@ -255,6 +259,14 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
   'error.userExists': 'Người dùng với email hoặc tên người dùng này đã tồn tại.',
   'error.passwordRequiredForDelete': 'Mật khẩu là bắt buộc để xóa tài khoản.',
   'error.passwordsDontMatch': 'Mật khẩu không khớp.',
+  'error.ownerOnlyAction': 'Không được phép: Chỉ chủ sở hữu mới có thể thực hiện hành động này.',
+  'error.cannotChangeOwnerStatus': "Không thể thay đổi trạng thái quản trị của chủ sở hữu.",
+  'error.ownerCannotDemoteSelf': 'Chủ sở hữu không thể tự gỡ bỏ trạng thái quản trị của mình.',
+  'error.cannotDeleteOwner': 'Không thể xóa tài khoản chủ sở hữu.',
+  'error.ownerOnlyDeleteAdmin': 'Chỉ chủ sở hữu mới có thể xóa tài khoản quản trị viên.',
+  'error.cannotDeleteSelf': 'Không thể tự xóa chính mình.',
+  'error.adminOrOwnerOnlyAction': 'Không được phép: Chỉ quản trị viên hoặc chủ sở hữu mới có thể thực hiện hành động này.',
+  'error.ownerCannotDeleteSelfViaAccountPage': 'Không thể xóa tài khoản chủ sở hữu theo cách này. Vui lòng liên hệ hỗ trợ.',
 };
 
 // Re-export EN translations from here too if LanguageContext imports from this file only

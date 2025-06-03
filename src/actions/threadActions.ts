@@ -2,7 +2,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { initialMockUsers, initialMockThreads } from '@/lib/mock-data'; // Updated import
+import { initialMockUsers, initialMockThreads } from '@/lib/mock-data'; 
 import type { Thread, Comment, User, Notification, NotificationType, NotificationEntityType, UpdateProfileData } from '@/lib/types';
 import { PREDEFINED_TRANSLATIONS_EN } from '@/lib/translations-en';
 
@@ -14,6 +14,7 @@ const DELETED_USER_PLACEHOLDER: User = {
   avatarUrl: 'https://placehold.co/40x40.png?text=X',
   createdAt: new Date(0).toISOString(),
   isAdmin: false,
+  isOwner: false,
   followerIds: [],
   followingIds: [],
 };
@@ -78,10 +79,10 @@ if (typeof global.mockDataStore === 'undefined') {
 
   const combinedUsersMap = new Map<string, User>();
   initialMockUsers.forEach(u => {
-    const defaultPassword = u.password || 'password123'; // Use provided password or default
-    combinedUsersMap.set(u.id, { ...u, password: defaultPassword, isAdmin: u.isAdmin || false, followingIds: u.followingIds || [], followerIds: u.followerIds || [] });
+    const defaultPassword = u.password || 'password123'; 
+    combinedUsersMap.set(u.id, { ...u, password: defaultPassword, isAdmin: u.isAdmin || false, isOwner: u.isOwner || false, followingIds: u.followingIds || [], followerIds: u.followerIds || [] });
   });
-  usersFromStorage.forEach(u => combinedUsersMap.set(u.id, u)); // Persisted users override defaults
+  usersFromStorage.forEach(u => combinedUsersMap.set(u.id, u)); 
 
   const combinedThreadsMap = new Map<string, Thread>();
   initialMockThreads.forEach(t => combinedThreadsMap.set(t.id, t));
@@ -498,22 +499,24 @@ export async function getAllUsersForAdminAction(): Promise<User[]> {
   return JSON.parse(JSON.stringify(global.mockDataStore.users.filter(u => u.id !== DELETED_USER_PLACEHOLDER.id) || []));
 }
 
-export async function setUserAdminStatusAction(targetUserId: string, makeAdmin: boolean, currentAdminId: string): Promise<{ success: boolean, error?: string }> {
-  const currentAdmin = findUserById(currentAdminId);
-  if (!currentAdmin || !currentAdmin.isAdmin) {
-    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.adminOnlyAction'] || 'Unauthorized: Only admins can perform this action.' };
+export async function setUserAdminStatusAction(targetUserId: string, makeAdmin: boolean, currentUserId: string): Promise<{ success: boolean, error?: string }> {
+  const currentUser = findUserById(currentUserId);
+  if (!currentUser || !currentUser.isOwner) { // Only owner can change admin status
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.ownerOnlyAction'] || 'Unauthorized: Only an owner can perform this action.' };
   }
 
   const targetUser = findUserById(targetUserId);
   if (!targetUser) {
     return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.userNotFound'] || 'Target user not found.' };
   }
+
+  if (targetUser.isOwner) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.cannotChangeOwnerStatus'] || 'Cannot change the admin status of an owner.'};
+  }
   
-  if (targetUser.id === currentAdminId && !makeAdmin) {
-     const adminCount = global.mockDataStore.users.filter(u => u.isAdmin).length;
-     if (adminCount <= 1) {
-        return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.cannotRemoveLastAdmin'] || 'Cannot remove the last admin.' };
-     }
+  // An owner cannot demote themselves (this implicitly covers the "last admin" if only one owner exists)
+  if (targetUser.id === currentUser.id && !makeAdmin) {
+     return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.ownerCannotDemoteSelf'] || 'Owner cannot remove their own admin status.' };
   }
 
   targetUser.isAdmin = makeAdmin;
@@ -556,7 +559,6 @@ function performUserDeletion(targetUserId: string): void {
     user.followerIds = user.followerIds?.filter(id => id !== targetUserId);
     user.followingIds = user.followingIds?.filter(id => id !== targetUserId);
   });
-  // No need to call persistUsersToLocalStorage() here as it's called after splice.
 
   global.mockDataStore.notifications = global.mockDataStore.notifications.filter(
     notif => notif.userId !== targetUserId && notif.actorId !== targetUserId
@@ -567,7 +569,7 @@ function performUserDeletion(targetUserId: string): void {
     }
   });
   persistNotificationsToLocalStorage();
-  persistUsersToLocalStorage(); // Persist changes from follower/following lists and user deletion
+  persistUsersToLocalStorage(); 
 
   revalidatePath('/admin');
   revalidatePath('/'); 
@@ -576,14 +578,31 @@ function performUserDeletion(targetUserId: string): void {
 }
 
 
-export async function deleteUserAction(targetUserId: string, currentAdminId: string): Promise<{ success: boolean, error?: string }> {
-  const currentAdmin = findUserById(currentAdminId);
-  if (!currentAdmin || !currentAdmin.isAdmin) {
-    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.adminOnlyAction'] || 'Unauthorized: Only admins can perform this action.' };
+export async function deleteUserAction(targetUserId: string, currentUserId: string): Promise<{ success: boolean, error?: string }> {
+  const currentUser = findUserById(currentUserId);
+  const targetUser = findUserById(targetUserId);
+
+  if (!currentUser) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.userNotFound'] || 'Current user not found.' };
+  }
+  if (!targetUser) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.userNotFound'] || 'Target user not found.' };
   }
 
-  if (targetUserId === currentAdminId) {
-    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.adminCannotDeleteSelf'] || 'Admin cannot delete themselves.' };
+  if (targetUser.isOwner) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.cannotDeleteOwner'] || 'Cannot delete an owner account.' };
+  }
+
+  if (targetUser.isAdmin && !currentUser.isOwner) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.ownerOnlyDeleteAdmin'] || 'Only an owner can delete an admin account.' };
+  }
+  
+  if (!currentUser.isAdmin && !currentUser.isOwner) { // Should not happen if UI is correct
+     return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.adminOrOwnerOnlyAction'] || 'Unauthorized: Only admins or owners can perform this action.' };
+  }
+
+  if (targetUserId === currentUserId) {
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.cannotDeleteSelf'] || 'Cannot delete yourself.' };
   }
   
   performUserDeletion(targetUserId);
@@ -683,18 +702,19 @@ export async function deleteCurrentUserAccountAction(userId: string, currentPass
   }
 
   const user = global.mockDataStore.users[userIndex];
+   if (user.isOwner) { // Prevent owner from deleting their own account this way
+    return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.ownerCannotDeleteSelfViaAccountPage'] || 'Owner account cannot be deleted this way. Contact support.' };
+  }
   if (user.password !== currentPasswordAttempt) {
     return { success: false, error: PREDEFINED_TRANSLATIONS_EN['error.incorrectCurrentPassword'] || 'Incorrect current password for account deletion.' };
   }
 
-  performUserDeletion(userId); // This already calls persistUsersToLocalStorage
-  // No need to revalidate paths here, performUserDeletion handles it.
-
+  performUserDeletion(userId); 
   return { success: true };
 }
 
-export async function createNewUserAction(userData: Omit<User, 'id' | 'createdAt' | 'isAdmin' | 'followerIds' | 'followingIds'> & { password?: string }): Promise<User | { error: string }> {
-  const { email, username, displayName, password: userPassword, avatarUrl } = userData;
+export async function createNewUserAction(userData: Omit<User, 'id' | 'createdAt' | 'followerIds' | 'followingIds'> & { password?: string }): Promise<User | { error: string }> {
+  const { email, username, displayName, password: userPassword, avatarUrl, isAdmin, isOwner } = userData;
 
   if (global.mockDataStore.users.find(u => u.email === email || u.username === username)) {
     return { error: PREDEFINED_TRANSLATIONS_EN['error.userExists'] || 'User with this email or username already exists.' };
@@ -707,10 +727,11 @@ export async function createNewUserAction(userData: Omit<User, 'id' | 'createdAt
     displayName: displayName || username,
     avatarUrl: avatarUrl || `https://placehold.co/40x40.png?text=${(displayName || username).charAt(0).toUpperCase()}`,
     createdAt: new Date().toISOString(),
-    isAdmin: false,
+    isAdmin: isAdmin || false, // Default to false if not provided
+    isOwner: isOwner || false, // Default to false if not provided
     followerIds: [],
     followingIds: [],
-    password: userPassword || 'password123', // Store password for mock auth
+    password: userPassword || 'password123', 
   };
 
   global.mockDataStore.users.push(newUser);
@@ -719,8 +740,4 @@ export async function createNewUserAction(userData: Omit<User, 'id' | 'createdAt
   const { password, ...userToReturn } = newUser;
   return userToReturn;
 }
-
-// The exports for initialMockUsers and initialMockThreads were removed as they caused a 'use server' violation.
-// If these are needed by client components, they should be imported directly from '@/lib/mock-data'.
-// AuthContext and other server-side logic within this file already initialize the global.mockDataStore correctly using these initial values.
     

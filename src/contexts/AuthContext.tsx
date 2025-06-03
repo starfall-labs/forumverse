@@ -5,7 +5,7 @@ import type { User } from '@/lib/types';
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { createNewUserAction, getUserByIdAction } from '@/actions/threadActions'; // Using actions
 
-type StoredUser = User & { password?: string }; // Kept for potential internal use, but actions manage passwords
+type StoredUser = User & { password?: string };
 
 interface SignupData {
   email: string;
@@ -25,7 +25,7 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const CURRENT_USER_STORAGE_KEY = 'forumverse_current_user_auth_info'; // Renamed to avoid confusion
+const CURRENT_USER_STORAGE_KEY = 'forumverse_current_user_auth_info'; 
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUserState] = useState<User | null>(null); 
@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserState(newUser);
     if (typeof localStorage !== 'undefined') {
       if (newUser) {
-        const { password, ...userToStore } = newUser;
+        const { password, ...userToStore } = newUser; // Ensure password is not stored in localStorage for current user
         try {
           localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(userToStore));
         } catch (error) {
@@ -60,10 +60,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const storedUserJson = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
           if (storedUserJson) {
             const storedUser = JSON.parse(storedUserJson) as User;
-            // Re-fetch from "DB" (global.mockDataStore via action) to ensure data consistency
             const liveUser = await getUserByIdAction(storedUser.id);
             if (isMounted) {
               if (liveUser) {
+                  // Ensure isOwner and isAdmin flags are correctly passed from liveUser
                   const { password, ...userToContext } = liveUser;
                   updateAuthUser(userToContext);
               } else {
@@ -93,7 +93,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 300)); 
 
-    // global.mockDataStore is initialized and managed by threadActions.ts
     const userToLogin = global.mockDataStore?.users.find(u => u.email === email && u.password === passwordAttempt);
 
     if (userToLogin) {
@@ -116,13 +115,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         username: data.username,
         displayName: data.displayName,
         password: data.password,
+        // New users are not admin or owner by default
+        isAdmin: false,
+        isOwner: false,
     });
 
     if ('error' in result) {
         setIsLoading(false);
         return false;
     } else {
-        // createNewUserAction already returns user without password
         updateAuthUser(result);
         setIsLoading(false);
         return true;
@@ -132,7 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = useCallback(() => {
     updateAuthUser(null);
     if (typeof window !== 'undefined') {
-        window.location.href = '/login'; // Redirect to login after logout
+        window.location.href = '/login'; 
     }
   }, [updateAuthUser]);
 
