@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -17,6 +18,18 @@ import {
 export function Navbar() {
   const { user, logout, isLoading } = useAuth();
 
+  const getAvatarFallback = () => {
+    if (!user) return '';
+    if (user.displayName) return user.displayName.charAt(0).toUpperCase();
+    if (user.username) return user.username.charAt(0).toUpperCase();
+    return user.email.charAt(0).toUpperCase();
+  };
+
+  const getUserDisplayName = () => {
+    if (!user) return '';
+    return user.displayName || user.username || user.email;
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
@@ -26,7 +39,7 @@ export function Navbar() {
           </svg>
           <span className="font-bold text-xl font-headline">ForumVerse</span>
         </Link>
-        
+
         <nav className="flex flex-1 items-center space-x-4">
           {/* Future nav items can go here */}
         </nav>
@@ -45,17 +58,17 @@ export function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.avatarUrl} alt={user.email} data-ai-hint="user avatar" />
-                    <AvatarFallback>{user.email.charAt(0).toUpperCase()}</AvatarFallback>
+                    <AvatarImage src={user.avatarUrl} alt={getUserDisplayName()} data-ai-hint="user avatar" />
+                    <AvatarFallback>{getAvatarFallback()}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.email}</p>
+                    <p className="text-sm font-medium leading-none">{getUserDisplayName()}</p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      Logged in
+                      u/{user.username}
                     </p>
                   </div>
                 </DropdownMenuLabel>

@@ -1,10 +1,11 @@
+
 import type { User, Thread, Comment } from './types';
 
 // Mock Users
 export const mockUsers: User[] = [
-  { id: 'user1', email: 'alice@example.com', avatarUrl: 'https://placehold.co/40x40.png?text=A' },
-  { id: 'user2', email: 'bob@example.com', avatarUrl: 'https://placehold.co/40x40.png?text=B' },
-  { id: 'user3', email: 'charlie@example.com', avatarUrl: 'https://placehold.co/40x40.png?text=C' },
+  { id: 'user1', email: 'alice@example.com', username: 'alice', displayName: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png?text=A' },
+  { id: 'user2', email: 'bob@example.com', username: 'bob', displayName: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png?text=B' },
+  { id: 'user3', email: 'charlie@example.com', username: 'charlie', displayName: 'Charlie Brown', avatarUrl: 'https://placehold.co/40x40.png?text=C' },
 ];
 
 // Mock Comments
@@ -100,10 +101,10 @@ export const getThreadById = async (id: string): Promise<Thread | undefined> => 
   return thread ? JSON.parse(JSON.stringify(thread)) : undefined;
 };
 
-export const addThread = async (thread: Omit<Thread, 'id' | 'createdAt' | 'upvotes' | 'downvotes' | 'comments' | 'commentCount' >): Promise<Thread> => {
+export const addThread = async (threadData: { title: string; content: string; author: User }): Promise<Thread> => {
   const newThread: Thread = {
-    ...thread,
-    id: `thread${mockThreads.length + 1}`,
+    ...threadData,
+    id: `thread${mockThreads.length + 1 + Date.now()}`,
     createdAt: new Date().toISOString(),
     upvotes: 1, // Start with one upvote from the author
     downvotes: 0,
@@ -114,7 +115,7 @@ export const addThread = async (thread: Omit<Thread, 'id' | 'createdAt' | 'upvot
   return JSON.parse(JSON.stringify(newThread));
 };
 
-export const addComment = async (threadId: string, commentData: Omit<Comment, 'id' | 'createdAt' | 'upvotes' | 'downvotes' | 'threadId' | 'replies'>, parentId?: string | null): Promise<Comment | null> => {
+export const addComment = async (threadId: string, commentData: {content: string, author: User}, parentId?: string | null): Promise<Comment | null> => {
   const thread = mockThreads.find(t => t.id === threadId);
   if (!thread) return null;
 
@@ -128,7 +129,7 @@ export const addComment = async (threadId: string, commentData: Omit<Comment, 'i
     downvotes: 0,
     replies: [],
   };
-  
+
   if (parentId) {
     const findParentAndAddReply = (comments: Comment[]): boolean => {
       for (let c of comments) {

@@ -1,8 +1,9 @@
+
 import type { Thread } from '@/lib/types';
 import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, User } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import { VoteButtons } from '@/components/shared/VoteButtons';
 import { voteThreadAction } from '@/actions/threadActions';
 import { formatDistanceToNow } from 'date-fns';
@@ -13,11 +14,13 @@ interface ThreadItemProps {
 }
 
 export function ThreadItem({ thread }: ThreadItemProps) {
-  
+
   const handleVote = async (itemId: string, type: 'upvote' | 'downvote') => {
-    'use server'; // This makes the function callable from client component but runs on server
+    'use server';
     await voteThreadAction(itemId, type);
   };
+
+  const authorDisplay = thread.author.displayName || thread.author.username;
 
   return (
     <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200">
@@ -27,14 +30,14 @@ export function ThreadItem({ thread }: ThreadItemProps) {
             initialUpvotes={thread.upvotes}
             initialDownvotes={thread.downvotes}
             itemId={thread.id}
-            onVote={handleVote} // Pass the server action directly
+            onVote={handleVote}
           />
         </aside>
         <div className="flex-grow">
           <CardHeader className="pb-2 pt-4 px-4">
             <div className="text-xs text-muted-foreground flex items-center space-x-2">
               <UserAvatar user={thread.author} className="h-5 w-5" />
-              <span>Posted by u/{thread.author.email}</span>
+              <span>Posted by {authorDisplay} (u/{thread.author.username})</span>
               <span>•</span>
               <time dateTime={thread.createdAt}>
                 {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}

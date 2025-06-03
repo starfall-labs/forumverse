@@ -1,6 +1,9 @@
+
 export type User = {
   id: string;
-  email: string; // For simplicity, username is email
+  email: string; // For simplicity, username is email initially if no username provided
+  username: string; // User-chosen, unique identifier
+  displayName?: string; // Optional display name
   avatarUrl?: string;
 };
 
@@ -13,11 +16,11 @@ export type Comment = {
   createdAt: string; // ISO date string
   upvotes: number;
   downvotes: number;
-  replies?: Comment[]; 
+  replies?: Comment[];
 };
 
 export type Thread = {
-  id: string;
+  id:string;
   title: string;
   content: string;
   author: User;

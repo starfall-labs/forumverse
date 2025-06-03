@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { User } from '@/lib/types';
@@ -7,10 +8,17 @@ import { mockUsers } from '@/lib/mock-data'; // For demo login
 // Extend User type for local storage which might include password (not for production)
 type StoredUser = User & { password?: string };
 
+interface SignupData {
+  email: string;
+  password?: string;
+  username: string;
+  displayName?: string;
+}
+
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password?: string) => Promise<boolean>; // Password for mock, not real SMTP
-  signup: (email: string, password?: string) => Promise<boolean>; // Password for mock
+  login: (email: string, password?: string) => Promise<boolean>;
+  signup: (data: SignupData) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -40,9 +48,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const getStoredUsers = (): StoredUser[] => {
     try {
       const usersStr = localStorage.getItem(FAKE_USERS_STORAGE_KEY);
-      return usersStr ? JSON.parse(usersStr) : [];
+      if (usersStr) {
+        const parsedUsers = JSON.parse(usersStr);
+        // Ensure mockUsers are added if not present in localStorage for demo purposes
+        const allUsers = [...parsedUsers];
+        mockUsers.forEach(mockUser => {
+          if (!allUsers.find(u => u.email === mockUser.email)) {
+            allUsers.push({ ...mockUser, password: 'password123' }); // Add mock password for login
+          }
+        });
+        return allUsers;
+      } else {
+        // Initialize with mockUsers if localStorage is empty
+        const initialUsers = mockUsers.map(u => ({ ...u, password: 'password123' }));
+        saveStoredUsers(initialUsers);
+        return initialUsers;
+      }
     } catch {
-      return [];
+      const initialUsers = mockUsers.map(u => ({ ...u, password: 'password123' }));
+      saveStoredUsers(initialUsers);
+      return initialUsers;
     }
   };
 
@@ -57,15 +82,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = useCallback(async (email: string, password?: string): Promise<boolean> => {
     setIsLoading(true);
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const storedUsers = getStoredUsers();
-    const existingUser = storedUsers.find(u => u.email === email && u.password === password); // Simple check for demo
-    // Or, use one of the mock users if no stored users or for easier demo
-    const demoUser = mockUsers.find(u => u.email === email);
 
-    const userToLogin = existingUser || (demoUser && password === 'password123' ? demoUser : null) ;
+    const storedUsers = getStoredUsers();
+    const userToLogin = storedUsers.find(u => u.email === email && u.password === password);
 
 
     if (userToLogin) {
@@ -83,26 +103,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return false;
   }, []);
 
-  const signup = useCallback(async (email: string, password?: string): Promise<boolean> => {
+  const signup = useCallback(async (data: SignupData): Promise<boolean> => {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     const storedUsers = getStoredUsers();
-    if (storedUsers.find(u => u.email === email)) {
+    if (storedUsers.find(u => u.email === data.email || u.username === data.username)) {
       setIsLoading(false);
-      return false; // User already exists
+      return false; // User email or username already exists
     }
 
     const newUser: StoredUser = {
       id: `user${Date.now()}`,
-      email,
-      password, // Store password for mock login
-      avatarUrl: `https://placehold.co/40x40.png?text=${email.charAt(0).toUpperCase()}`
+      email: data.email,
+      username: data.username,
+      displayName: data.displayName,
+      password: data.password, // Store password for mock login
+      avatarUrl: `https://placehold.co/40x40.png?text=${(data.displayName || data.username || data.email).charAt(0).toUpperCase()}`
     };
-    
+
     saveStoredUsers([...storedUsers, newUser]);
-    
-    // Automatically log in after signup
+
     const { password: _p, ...userWithoutPassword } = newUser;
     setUser(userWithoutPassword);
     try {

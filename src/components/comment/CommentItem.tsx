@@ -1,8 +1,9 @@
+
 'use client';
 
-import type { Comment as CommentType } from '@/lib/types';
+import type { Comment as CommentType, User } from '@/lib/types';
 import { useState } from 'react';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/shared/UserAvatar';
 import { VoteButtons } from '@/components/shared/VoteButtons';
@@ -21,14 +22,15 @@ export function CommentItem({ comment, threadId, depth = 0 }: CommentItemProps) 
   const [showReplyForm, setShowReplyForm] = useState(false);
 
   const handleVote = async (itemId: string, type: 'upvote' | 'downvote') => {
-    // This is a client component action, so it needs to call a server action.
-    // For simplicity, we assume voteCommentAction can be called directly if it's set up correctly
-    // or we'd pass a client-side wrapper.
-    // Let's assume voteCommentAction is directly callable.
     await voteCommentAction(threadId, itemId, type);
   };
-  
-  const cardPaddingLeft = depth > 0 ? `pl-${2 + depth * 4}` : 'pl-2'; // Tailwind JIT needs full class names
+
+  const cardPaddingLeft = depth > 0 ? `pl-${2 + depth * 4}` : 'pl-2';
+
+  const authorDisplay = (author: User) => {
+    return author.displayName || author.username;
+  };
+
 
   return (
     <Card className={`overflow-hidden shadow-sm ${depth > 0 ? 'ml-4 md:ml-8 border-l-2' : ''}`}>
@@ -46,7 +48,7 @@ export function CommentItem({ comment, threadId, depth = 0 }: CommentItemProps) 
         <div className={`flex-grow ${cardPaddingLeft} pr-2 py-2`}>
             <div className="flex items-center space-x-2 mb-1">
               <UserAvatar user={comment.author} className="h-5 w-5" />
-              <span className="text-xs font-medium">u/{comment.author.email}</span>
+              <span className="text-xs font-medium">{authorDisplay(comment.author)} (u/{comment.author.username})</span>
               <span className="text-xs text-muted-foreground">•</span>
               <time dateTime={comment.createdAt} className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
