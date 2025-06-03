@@ -16,7 +16,6 @@ interface ThreadItemProps {
 export function ThreadItem({ thread }: ThreadItemProps) {
 
   const handleVote = async (itemId: string, type: 'upvote' | 'downvote') => {
-    'use server';
     await voteThreadAction(itemId, type);
   };
 

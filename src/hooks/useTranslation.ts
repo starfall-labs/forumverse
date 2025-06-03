@@ -33,11 +33,8 @@ export const useTranslation = (): UseTranslationResult => {
     if (loadingKey !== key) { // Avoid multiple requests for the same key while loading
       setLoadingKey(key);
       getTranslation(key, defaultText)
-        .then(() => {
-           // Context update will trigger re-render if component uses translations from context
-           // Forcing an update here ensures this specific hook consumer re-renders.
-          setForceUpdate({});
-        })
+        // Removed setForceUpdate({}) from here.
+        // The useEffect below, which depends on `translations`, will handle re-rendering.
         .finally(() => {
           setLoadingKey(null);
         });
@@ -53,3 +50,4 @@ export const useTranslation = (): UseTranslationResult => {
 
   return { t: translate, loadingKey, currentLanguage };
 };
+

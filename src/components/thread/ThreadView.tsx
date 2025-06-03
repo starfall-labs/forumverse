@@ -12,7 +12,6 @@ interface ThreadViewProps {
 export function ThreadView({ thread }: ThreadViewProps) {
 
   const handleVote = async (itemId: string, type: 'upvote' | 'downvote') => {
-    'use server';
     await voteThreadAction(itemId, type);
   };
 
