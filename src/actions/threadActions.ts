@@ -2,26 +2,17 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { 
-  mockThreads, 
-  mockUsers, 
-  addThread as addThreadToMock, 
-  addComment as addCommentToMock,
-  updateThreadVotes as updateThreadVotesInMock,
-  updateCommentVotes as updateCommentVotesInMock,
-  getUserByUsername as getUserByUsernameFromMock
-} from '@/lib/mock-data';
+import { initialMockThreads, initialMockUsers } from '@/lib/mock-data';
 import type { Thread, Comment, User } from '@/lib/types';
 
-// This is a hack to make mock data somewhat persistent across server action calls in dev mode.
-// In a real app, this would be a database.
-if (typeof global.mockThreads === 'undefined') {
-  global.mockThreads = mockThreads;
+// Initialize global mock data store if it doesn't exist.
+// This ensures data persistence across server action calls in dev mode.
+if (typeof global.mockDataStore === 'undefined') {
+  global.mockDataStore = {
+    threads: JSON.parse(JSON.stringify(initialMockThreads)) as Thread[],
+    users: JSON.parse(JSON.stringify(initialMockUsers)) as User[],
+  };
 }
-if (typeof global.mockUsers === 'undefined') {
-  global.mockUsers = mockUsers;
-}
-
 
 export async function createThreadAction(formData: FormData, authorEmail: string): Promise<Thread | { error: string }> {
   const title = formData.get('title') as string;
@@ -31,14 +22,24 @@ export async function createThreadAction(formData: FormData, authorEmail: string
     return { error: 'Title and content are required.' };
   }
   
-  const author = global.mockUsers.find(u => u.email === authorEmail);
+  const author = global.mockDataStore.users.find(u => u.email === authorEmail);
   if (!author) {
     return { error: 'User not found.' };
   }
 
-  const newThreadData = { title, content, author };
-  const newThread = await addThreadToMock(newThreadData);
-  global.mockThreads.unshift(newThread); // Ensure global mockThreads is updated if addThreadToMock doesn't do it.
+  const newThread: Thread = {
+    id: `thread${global.mockDataStore.threads.length + 1 + Date.now()}`,
+    title,
+    content,
+    author,
+    createdAt: new Date().toISOString(),
+    upvotes: 1,
+    downvotes: 0,
+    comments: [],
+    commentCount: 0,
+  };
+
+  global.mockDataStore.threads.unshift(newThread);
 
   revalidatePath('/');
   revalidatePath(`/t/${newThread.id}`);
@@ -52,52 +53,58 @@ export async function addCommentAction(threadId: string, formData: FormData, aut
     return { error: 'Comment content cannot be empty.' };
   }
 
-  const author = global.mockUsers.find(u => u.email === authorEmail);
+  const author = global.mockDataStore.users.find(u => u.email === authorEmail);
   if (!author) {
     return { error: 'User not found.' };
   }
   
-  const commentData = { content, author };
-  const newComment = await addCommentToMock(threadId, commentData, parentId);
-
-  if (!newComment) {
-    return { error: 'Failed to add comment or thread not found.' };
+  const thread = global.mockDataStore.threads.find(t => t.id === threadId);
+  if (!thread) {
+    return { error: 'Thread not found.' };
   }
-  
-  // Update global.mockThreads
-  const threadIndex = global.mockThreads.findIndex(t => t.id === threadId);
-  if (threadIndex !== -1) {
-     if (parentId) {
-        const findParentAndAddReply = (comments: Comment[]): boolean => {
-          for (let c of comments) {
-            if (c.id === parentId) {
-              c.replies = c.replies ? [...c.replies, newComment] : [newComment];
-              return true;
-            }
-            if (c.replies && findParentAndAddReply(c.replies)) {
-              return true;
-            }
-          }
-          return false;
+
+  const newComment: Comment = {
+    id: `comment${Date.now()}`,
+    threadId,
+    parentId: parentId || null,
+    author,
+    content,
+    createdAt: new Date().toISOString(),
+    upvotes: 1,
+    downvotes: 0,
+    replies: [],
+  };
+
+  if (parentId) {
+    const findParentAndAddReply = (comments: Comment[]): boolean => {
+      for (let c of comments) {
+        if (c.id === parentId) {
+          c.replies = c.replies ? [...c.replies, newComment] : [newComment];
+          return true;
         }
-        findParentAndAddReply(global.mockThreads[threadIndex].comments);
-      } else {
-        global.mockThreads[threadIndex].comments.push(newComment);
+        if (c.replies && findParentAndAddReply(c.replies)) {
+          return true;
+        }
       }
-      global.mockThreads[threadIndex].commentCount +=1;
+      return false;
+    }
+    findParentAndAddReply(thread.comments);
+  } else {
+    thread.comments.push(newComment);
   }
-
-
+  thread.commentCount +=1;
+  
   revalidatePath(`/t/${threadId}`);
   return newComment;
 }
 
 export async function voteThreadAction(threadId: string, type: 'upvote' | 'downvote'): Promise<void> {
-  const updatedThread = await updateThreadVotesInMock(threadId, type);
-  if (updatedThread) {
-    const index = global.mockThreads.findIndex(t => t.id === threadId);
-    if (index !== -1) {
-      global.mockThreads[index] = updatedThread;
+  const thread = global.mockDataStore.threads.find(t => t.id === threadId);
+  if (thread) {
+    if (type === 'upvote') {
+      thread.upvotes += 1;
+    } else {
+      thread.downvotes += 1;
     }
   }
   revalidatePath('/');
@@ -105,24 +112,36 @@ export async function voteThreadAction(threadId: string, type: 'upvote' | 'downv
 }
 
 export async function voteCommentAction(threadId: string, commentId: string, type: 'upvote' | 'downvote'): Promise<void> {
-  await updateCommentVotesInMock(threadId, commentId, type);
-  // Need to re-fetch/update the specific comment in global.mockThreads if necessary,
-  // but updateCommentVotesInMock already modifies the mock data structure.
+  const thread = global.mockDataStore.threads.find(t => t.id === threadId);
+  if (!thread) return;
+
+  const findAndUpdateComment = (comments: Comment[]): boolean => {
+    for (let c of comments) {
+      if (c.id === commentId) {
+        if (type === 'upvote') c.upvotes += 1;
+        else c.downvotes += 1;
+        return true;
+      }
+      if (c.replies && findAndUpdateComment(c.replies)) return true;
+    }
+    return false;
+  }
+
+  findAndUpdateComment(thread.comments);
   revalidatePath(`/t/${threadId}`);
 }
 
-// These are needed because server actions are run in a separate context from the module cache sometimes
-// This ensures that components calling these functions get the most up-to-date mock data
 export async function getThreadsAction(): Promise<Thread[]> {
-  return JSON.parse(JSON.stringify(global.mockThreads || []));
+  // Return a deep copy to prevent direct mutation issues in components if they were to receive the raw array
+  return JSON.parse(JSON.stringify(global.mockDataStore.threads || []));
 }
 
 export async function getThreadByIdAction(id: string): Promise<Thread | undefined> {
-  const thread = (global.mockThreads || []).find((t: Thread) => t.id === id);
+  const thread = (global.mockDataStore.threads || []).find((t: Thread) => t.id === id);
   return thread ? JSON.parse(JSON.stringify(thread)) : undefined;
 }
 
 export async function getUserByUsernameAction(username: string): Promise<User | undefined> {
-  const user = (global.mockUsers || []).find((u: User) => u.username === username);
+  const user = (global.mockDataStore.users || []).find((u: User) => u.username === username);
   return user ? JSON.parse(JSON.stringify(user)) : undefined;
 }

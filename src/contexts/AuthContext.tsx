@@ -3,7 +3,7 @@
 
 import type { User } from '@/lib/types';
 import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { mockUsers } from '@/lib/mock-data'; // For demo login
+import { initialMockUsers } from '@/lib/mock-data'; // Use initialMockUsers
 
 // Extend User type for local storage which might include password (not for production)
 type StoredUser = User & { password?: string };
@@ -49,25 +49,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const usersStr = localStorage.getItem(FAKE_USERS_STORAGE_KEY);
       if (usersStr) {
-        const parsedUsers = JSON.parse(usersStr);
-        // Ensure mockUsers are added if not present in localStorage for demo purposes
-        const allUsers = [...parsedUsers];
-        mockUsers.forEach(mockUser => {
-          if (!allUsers.find(u => u.email === mockUser.email)) {
-            allUsers.push({ ...mockUser, password: 'password123' }); // Add mock password for login
+        const parsedUsers = JSON.parse(usersStr) as StoredUser[];
+        // Ensure initialMockUsers are added if not present in localStorage for demo purposes
+        const allUsersMap = new Map(parsedUsers.map(u => [u.email, u]));
+        initialMockUsers.forEach(mockUser => {
+          if (!allUsersMap.has(mockUser.email)) {
+            allUsersMap.set(mockUser.email, { ...mockUser, password: 'password123' }); // Add mock password for login
           }
         });
-        return allUsers;
+        const updatedUsers = Array.from(allUsersMap.values());
+        if (usersStr !== JSON.stringify(updatedUsers)) { // Avoid rewriting if no changes
+            saveStoredUsers(updatedUsers);
+        }
+        return updatedUsers;
       } else {
-        // Initialize with mockUsers if localStorage is empty
-        const initialUsers = mockUsers.map(u => ({ ...u, password: 'password123' }));
-        saveStoredUsers(initialUsers);
-        return initialUsers;
+        // Initialize with initialMockUsers if localStorage is empty
+        const initialUsersWithPassword = initialMockUsers.map(u => ({ ...u, password: 'password123' }));
+        saveStoredUsers(initialUsersWithPassword);
+        return initialUsersWithPassword;
       }
     } catch {
-      const initialUsers = mockUsers.map(u => ({ ...u, password: 'password123' }));
-      saveStoredUsers(initialUsers);
-      return initialUsers;
+      const initialUsersWithPassword = initialMockUsers.map(u => ({ ...u, password: 'password123' }));
+      saveStoredUsers(initialUsersWithPassword);
+      return initialUsersWithPassword;
     }
   };
 
@@ -82,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = useCallback(async (email: string, password?: string): Promise<boolean> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
 
     const storedUsers = getStoredUsers();
     const userToLogin = storedUsers.find(u => u.email === email && u.password === password);
@@ -105,7 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = useCallback(async (data: SignupData): Promise<boolean> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
 
     const storedUsers = getStoredUsers();
     if (storedUsers.find(u => u.email === data.email || u.username === data.username)) {
@@ -117,13 +121,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: `user${Date.now()}`,
       email: data.email,
       username: data.username,
-      displayName: data.displayName || undefined, // Ensure it's undefined if empty
+      displayName: data.displayName || data.username, // Default displayName to username if not provided
       password: data.password, // Store password for mock login
-      avatarUrl: `https://placehold.co/40x40.png?text=${(data.displayName || data.username || data.email).charAt(0).toUpperCase()}`,
+      avatarUrl: `https://placehold.co/40x40.png?text=${(data.displayName || data.username).charAt(0).toUpperCase()}`,
       createdAt: new Date().toISOString(),
     };
 
     saveStoredUsers([...storedUsers, newUser]);
+
+    // Also add to the global in-memory store for current session consistency if needed by other parts
+    if (global.mockDataStore && global.mockDataStore.users) {
+        const { password: _p, ...userForGlobalStore } = newUser;
+        global.mockDataStore.users.push(userForGlobalStore);
+    }
+
 
     const { password: _p, ...userWithoutPassword } = newUser;
     setUser(userWithoutPassword);

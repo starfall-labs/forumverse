@@ -1,21 +1,23 @@
 
 import type { User, Thread, Comment } from './types';
 
-// Mock Users
-export const mockUsers: User[] = [
-  { id: 'user1', email: 'alice@example.com', username: 'alice', displayName: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png?text=A', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString() }, // 30 days ago
-  { id: 'user2', email: 'bob@example.com', username: 'bob', displayName: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png?text=B', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString() }, // 60 days ago
-  { id: 'user3', email: 'charlie@example.com', username: 'charlie', displayName: 'Charlie Brown', avatarUrl: 'https://placehold.co/40x40.png?text=C', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString() }, // 5 days ago
+// Initial Mock Users
+export const initialMockUsers: User[] = [
+  { id: 'user1', email: 'alice@example.com', username: 'alice', displayName: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png?text=A', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString() },
+  { id: 'user2', email: 'bob@example.com', username: 'bob', displayName: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png?text=B', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString() },
+  { id: 'user3', email: 'charlie@example.com', username: 'charlie', displayName: 'Charlie Brown', avatarUrl: 'https://placehold.co/40x40.png?text=C', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString() },
+  { id: 'user4', email: 'diana@example.com', username: 'diana', displayName: 'Diana Prince', avatarUrl: 'https://placehold.co/40x40.png?text=D', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString() },
+  { id: 'user5', email: 'edward@example.com', username: 'edward', displayName: 'Edward Nygma', avatarUrl: 'https://placehold.co/40x40.png?text=E', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString() },
 ];
 
-// Mock Comments
+// Initial Mock Comments for Thread 1
 const commentsThread1: Comment[] = [
   {
     id: 'comment1_1',
     threadId: 'thread1',
-    author: mockUsers[1],
+    author: initialMockUsers[1], // Bob
     content: 'Great point! I totally agree.',
-    createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 minutes ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
     upvotes: 15,
     downvotes: 1,
     replies: [
@@ -23,9 +25,9 @@ const commentsThread1: Comment[] = [
         id: 'reply1_1_1',
         threadId: 'thread1',
         parentId: 'comment1_1',
-        author: mockUsers[0],
+        author: initialMockUsers[0], // Alice
         content: 'Thanks Bob! Glad you found it insightful.',
-        createdAt: new Date(Date.now() - 1000 * 60 * 2).toISOString(), // 2 minutes ago
+        createdAt: new Date(Date.now() - 1000 * 60 * 2).toISOString(),
         upvotes: 5,
         downvotes: 0,
       },
@@ -34,34 +36,35 @@ const commentsThread1: Comment[] = [
   {
     id: 'comment1_2',
     threadId: 'thread1',
-    author: mockUsers[2],
+    author: initialMockUsers[2], // Charlie
     content: "I have a slightly different perspective on this. What about...?",
-    createdAt: new Date(Date.now() - 1000 * 60 * 3).toISOString(), // 3 minutes ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 3).toISOString(),
     upvotes: 8,
     downvotes: 3,
   },
 ];
 
+// Initial Mock Comments for Thread 2
 const commentsThread2: Comment[] = [
   {
     id: 'comment2_1',
     threadId: 'thread2',
-    author: mockUsers[0],
+    author: initialMockUsers[0], // Alice
     content: "This is a really interesting topic. I'm looking forward to seeing what others think.",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
     upvotes: 22,
     downvotes: 0,
   },
 ];
 
-// Mock Threads
-export let mockThreads: Thread[] = [
+// Initial Mock Threads
+export const initialMockThreads: Thread[] = [
   {
     id: 'thread1',
     title: 'The Future of Web Development: Predictions for 2025',
     content: 'The web development landscape is constantly evolving. What major trends, technologies, and methodologies do you foresee shaping the industry by 2025? Consider aspects like AI integration, new frameworks, serverless architectures, WebAssembly, and the evolving role of developers. Let\'s discuss!',
-    author: mockUsers[0],
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+    author: initialMockUsers[0], // Alice
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
     upvotes: 120,
     downvotes: 5,
     comments: commentsThread1,
@@ -71,8 +74,8 @@ export let mockThreads: Thread[] = [
     id: 'thread2',
     title: 'Best Practices for Remote Team Collaboration',
     content: 'With remote work becoming more prevalent, effective collaboration is key. What are your go-to tools, strategies, and best practices for keeping remote teams connected, productive, and engaged? Share your experiences and tips!',
-    author: mockUsers[1],
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(), // 2 days ago
+    author: initialMockUsers[1], // Bob
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
     upvotes: 250,
     downvotes: 12,
     comments: commentsThread2,
@@ -82,111 +85,11 @@ export let mockThreads: Thread[] = [
     id: 'thread3',
     title: 'Exploring the Ethics of Artificial Intelligence in Creative Fields',
     content: 'AI is increasingly capable of generating art, music, and text. This raises important ethical questions about authorship, copyright, and the impact on human artists. What are your thoughts on the ethical implications of AI in creative industries? How can we navigate these challenges responsibly?',
-    author: mockUsers[2],
-    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
+    author: initialMockUsers[2], // Charlie
+    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
     upvotes: 75,
     downvotes: 2,
     comments: [],
     commentCount: 0,
   },
 ];
-
-// Functions to interact with mock data (simulating API/DB)
-export const getThreads = async (): Promise<Thread[]> => {
-  return JSON.parse(JSON.stringify(mockThreads)); // Return a deep copy to avoid direct mutation issues in components
-};
-
-export const getThreadById = async (id: string): Promise<Thread | undefined> => {
-  const thread = mockThreads.find(t => t.id === id);
-  return thread ? JSON.parse(JSON.stringify(thread)) : undefined;
-};
-
-export const addThread = async (threadData: { title: string; content: string; author: User }): Promise<Thread> => {
-  const newThread: Thread = {
-    ...threadData,
-    id: `thread${mockThreads.length + 1 + Date.now()}`,
-    createdAt: new Date().toISOString(),
-    upvotes: 1, // Start with one upvote from the author
-    downvotes: 0,
-    comments: [],
-    commentCount: 0,
-  };
-  mockThreads.unshift(newThread); // Add to the beginning
-  return JSON.parse(JSON.stringify(newThread));
-};
-
-export const addComment = async (threadId: string, commentData: {content: string, author: User}, parentId?: string | null): Promise<Comment | null> => {
-  const thread = mockThreads.find(t => t.id === threadId);
-  if (!thread) return null;
-
-  const newComment: Comment = {
-    ...commentData,
-    id: `comment${Date.now()}`,
-    threadId,
-    parentId,
-    createdAt: new Date().toISOString(),
-    upvotes: 1,
-    downvotes: 0,
-    replies: [],
-  };
-
-  if (parentId) {
-    const findParentAndAddReply = (comments: Comment[]): boolean => {
-      for (let c of comments) {
-        if (c.id === parentId) {
-          c.replies = c.replies ? [...c.replies, newComment] : [newComment];
-          return true;
-        }
-        if (c.replies && findParentAndAddReply(c.replies)) {
-          return true;
-        }
-      }
-      return false;
-    }
-    findParentAndAddReply(thread.comments);
-  } else {
-    thread.comments.push(newComment);
-  }
-  thread.commentCount +=1;
-  return JSON.parse(JSON.stringify(newComment));
-};
-
-export const updateThreadVotes = async (threadId: string, type: 'upvote' | 'downvote'): Promise<Thread | null> => {
-  const threadIndex = mockThreads.findIndex(t => t.id === threadId);
-  if (threadIndex === -1) return null;
-
-  if (type === 'upvote') {
-    mockThreads[threadIndex].upvotes += 1;
-  } else {
-    mockThreads[threadIndex].downvotes += 1;
-  }
-  return JSON.parse(JSON.stringify(mockThreads[threadIndex]));
-};
-
-export const updateCommentVotes = async (threadId: string, commentId: string, type: 'upvote' | 'downvote'): Promise<Comment | null> => {
-  const thread = mockThreads.find(t => t.id === threadId);
-  if (!thread) return null;
-
-  let targetComment: Comment | null = null;
-
-  const findAndUpdateComment = (comments: Comment[]): boolean => {
-    for (let c of comments) {
-      if (c.id === commentId) {
-        if (type === 'upvote') c.upvotes += 1;
-        else c.downvotes += 1;
-        targetComment = c;
-        return true;
-      }
-      if (c.replies && findAndUpdateComment(c.replies)) return true;
-    }
-    return false;
-  }
-
-  findAndUpdateComment(thread.comments);
-  return targetComment ? JSON.parse(JSON.stringify(targetComment)) : null;
-};
-
-export const getUserByUsername = async (username: string): Promise<User | undefined> => {
-  const user = mockUsers.find(u => u.username === username);
-  return user ? JSON.parse(JSON.stringify(user)) : undefined;
-};
