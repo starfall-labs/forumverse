@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
-import { LogIn, LogOut, PlusCircle, UserCircle2, Languages, User as UserIcon, Bell, ShieldCheck } from 'lucide-react';
+import { LogIn, LogOut, PlusCircle, UserCircle2, Languages, User as UserIcon, Bell, ShieldCheck, Settings } from 'lucide-react'; // Added Settings
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +39,9 @@ export function Navbar() {
         setUnreadCount(0);
       }
     }
-    fetchUnreadCount();
+    if (user) { // Only fetch if user is defined
+        fetchUnreadCount();
+    }
   }, [user, pathname]);
 
 
@@ -151,6 +153,12 @@ export function Navbar() {
                     <span>{t('navbar.myProfile', 'My Profile')}</span>
                   </Link>
                 </DropdownMenuItem>
+                 <DropdownMenuItem asChild>
+                  <Link href="/account">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>{t('navbar.accountSettings', 'Account Settings')}</span>
+                  </Link>
+                </DropdownMenuItem>
                 {user.isAdmin && (
                   <DropdownMenuItem asChild>
                     <Link href="/admin">
@@ -159,6 +167,7 @@ export function Navbar() {
                     </Link>
                   </DropdownMenuItem>
                 )}
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>{t('navbar.logout', 'Log out')}</span>

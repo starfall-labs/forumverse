@@ -10,6 +10,7 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'navbar.myProfile': 'My Profile',
   'navbar.notifications': 'Notifications',
   'navbar.adminPage': 'Admin Page',
+  'navbar.accountSettings': 'Account Settings',
 
   'home.popularThreads': 'Popular Threads',
   'home.createThreadButton': 'Create New Thread',
@@ -114,6 +115,11 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'toast.admin.errorUpdatingAdminStatus': 'Could not update admin status.',
   'toast.admin.userDeleted': 'User has been deleted.',
   'toast.admin.errorDeletingUser': 'Could not delete user.',
+  'toast.profileUpdatedTitle': 'Profile Updated',
+  'toast.profileUpdatedDescription': 'Your profile has been successfully updated.',
+  'toast.profileUpdateFailedDescription': 'Could not update your profile.',
+  'toast.noChangesTitle': 'No Changes',
+  'toast.noChangesDescription': "You haven't made any changes to save.",
 
 
   'userProfile.about': 'About',
@@ -190,4 +196,13 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'adminPage.dialog.confirmButton': 'Confirm',
   'adminPage.dialog.confirmDeleteButton': 'Delete',
 
+  'accountPage.title': 'Account Settings',
+  'accountPage.editProfileTitle': 'Edit Profile',
+  'accountPage.editProfileDescription': 'Update your display name and avatar.',
+  'accountPage.displayNameLabel': 'Display Name',
+  'accountPage.displayNamePlaceholder': 'Your display name',
+  'accountPage.avatarUrlLabel': 'Avatar URL',
+  'accountPage.avatarUrlPlaceholder': 'https://example.com/avatar.png',
+  'accountPage.saveChangesButton': 'Save Changes',
+  'accountPage.savingChangesButton': 'Saving...',
 };

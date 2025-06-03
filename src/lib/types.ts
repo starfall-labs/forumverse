@@ -12,6 +12,11 @@ export type User = {
   isAdmin?: boolean; // Flag to identify admin users
 };
 
+export interface UpdateProfileData {
+  displayName?: string;
+  avatarUrl?: string;
+}
+
 export type Comment = {
   id: string;
   threadId: string;
@@ -63,3 +68,4 @@ export type Notification = {
   createdAt: string; // ISO date string
   isRead: boolean;
 };
+

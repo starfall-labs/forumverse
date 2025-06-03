@@ -12,6 +12,8 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
   'navbar.myProfile': 'Hồ sơ của tôi',
   'navbar.notifications': 'Thông báo',
   'navbar.adminPage': 'Trang Admin',
+  'navbar.accountSettings': 'Cài đặt Tài khoản',
+
 
   'home.popularThreads': 'Chủ đề Nổi bật',
   'home.createThreadButton': 'Tạo Chủ đề Mới',
@@ -116,6 +118,12 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
   'toast.admin.errorUpdatingAdminStatus': 'Không thể cập nhật trạng thái admin.',
   'toast.admin.userDeleted': 'Người dùng đã bị xóa.',
   'toast.admin.errorDeletingUser': 'Không thể xóa người dùng.',
+  'toast.profileUpdatedTitle': 'Hồ sơ đã được cập nhật',
+  'toast.profileUpdatedDescription': 'Hồ sơ của bạn đã được cập nhật thành công.',
+  'toast.profileUpdateFailedDescription': 'Không thể cập nhật hồ sơ của bạn.',
+  'toast.noChangesTitle': 'Không có thay đổi',
+  'toast.noChangesDescription': 'Bạn chưa thực hiện thay đổi nào để lưu.',
+
 
   'userProfile.about': 'Về',
   'userProfile.memberSince': 'Thành viên từ:',
@@ -190,6 +198,16 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
   'adminPage.dialog.cancelButton': 'Hủy',
   'adminPage.dialog.confirmButton': 'Xác nhận',
   'adminPage.dialog.confirmDeleteButton': 'Xóa',
+
+  'accountPage.title': 'Cài đặt Tài khoản',
+  'accountPage.editProfileTitle': 'Chỉnh sửa Hồ sơ',
+  'accountPage.editProfileDescription': 'Cập nhật tên hiển thị và ảnh đại diện của bạn.',
+  'accountPage.displayNameLabel': 'Tên hiển thị',
+  'accountPage.displayNamePlaceholder': 'Tên hiển thị của bạn',
+  'accountPage.avatarUrlLabel': 'URL Ảnh đại diện',
+  'accountPage.avatarUrlPlaceholder': 'https://example.com/avatar.png',
+  'accountPage.saveChangesButton': 'Lưu Thay đổi',
+  'accountPage.savingChangesButton': 'Đang lưu...',
 };
 
 // Re-export EN translations from here too if LanguageContext imports from this file only

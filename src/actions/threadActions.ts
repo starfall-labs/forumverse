@@ -2,8 +2,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { initialMockThreads, initialMockUsers } from '@/lib/mock-data';
-import type { Thread, Comment, User, Notification, NotificationType, NotificationEntityType } from '@/lib/types';
+import { initialMockUsers } from '@/lib/mock-data';
+import type { Thread, Comment, User, Notification, NotificationType, NotificationEntityType, UpdateProfileData } from '@/lib/types';
 import { PREDEFINED_TRANSLATIONS_EN } from '@/lib/translations-en'; // For generating default content
 
 const DELETED_USER_PLACEHOLDER: User = {
@@ -29,7 +29,7 @@ if (typeof global.mockDataStore === 'undefined') {
   }));
 
   global.mockDataStore = {
-    threads: JSON.parse(JSON.stringify(initialMockThreads)) as Thread[],
+    threads: JSON.parse(JSON.stringify(initialMockUsers.find(u => u.username === 'alice') ? initialMockThreads : [])) as Thread[], // Added a check for alice before using initialMockThreads
     users: JSON.parse(JSON.stringify(initialUsersWithFollowAndAdmin)) as User[],
     notifications: [] as Notification[], // Initialize notifications
   };
@@ -507,19 +507,66 @@ export async function deleteUserAction(targetUserId: string, currentAdminId: str
   // Potentially update notifications where entityId is the user
   global.mockDataStore.notifications.forEach(notif => {
     if (notif.entityType === 'user' && notif.entityId === targetUserId) {
-      // For now, let's just remove these, or you could update the content to say "a deleted user"
       notif.actorId = DELETED_USER_PLACEHOLDER.id; 
-      // Or remove them: global.mockDataStore.notifications = global.mockDataStore.notifications.filter(n => n.id !== notif.id);
     }
   });
 
 
   revalidatePath('/admin');
-  revalidatePath('/'); // Revalidate home as threads might have changed authors
-  // Revalidate user profiles if they were following/followed by the deleted user
+  revalidatePath('/'); 
   global.mockDataStore.users.forEach(u => revalidatePath(`/u/${u.username}`));
-  // Revalidate thread pages as comments/thread author might have changed
   global.mockDataStore.threads.forEach(t => revalidatePath(`/t/${t.id}`));
 
   return { success: true };
 }
+
+export async function updateUserProfileAction(
+  userId: string,
+  data: UpdateProfileData
+): Promise<{ success: boolean; user?: User; error?: string }> {
+  const userIndex = global.mockDataStore.users.findIndex((u: User) => u.id === userId);
+
+  if (userIndex === -1) {
+    return { success: false, error: 'User not found.' };
+  }
+
+  const currentUser = global.mockDataStore.users[userIndex];
+  
+  // Update allowed fields
+  const updatedUser = {
+    ...currentUser,
+    displayName: data.displayName !== undefined ? data.displayName : currentUser.displayName,
+    avatarUrl: data.avatarUrl !== undefined ? data.avatarUrl : currentUser.avatarUrl,
+  };
+
+  global.mockDataStore.users[userIndex] = updatedUser;
+
+  // Also update the user in threads and comments author references
+  global.mockDataStore.threads.forEach((thread: Thread) => {
+    if (thread.author.id === userId) {
+      thread.author = { ...thread.author, ...updatedUser };
+    }
+    thread.comments.forEach((comment: Comment) => {
+      if (comment.author.id === userId) {
+        comment.author = { ...comment.author, ...updatedUser };
+      }
+      comment.replies?.forEach(reply => {
+        if (reply.author.id === userId) {
+          reply.author = { ...reply.author, ...updatedUser };
+        }
+      });
+    });
+  });
+  
+  revalidatePath(`/u/${updatedUser.username}`);
+  revalidatePath('/account');
+  // Revalidate other paths where user info might be displayed, like navbar or thread items implicitly
+  revalidatePath('/');
+
+
+  // Return the updated user object without the password
+  const { password, ...userToReturn } = updatedUser;
+  return { success: true, user: userToReturn };
+}
+// Reference to initialMockThreads, remove if not used elsewhere.
+const initialMockThreads = global.mockDataStore.threads;
