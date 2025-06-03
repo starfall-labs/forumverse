@@ -32,7 +32,7 @@ export default function HomePage() {
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
           <h1 className="text-3xl font-bold font-headline">{t('home.popularThreads', 'Popular Threads')}</h1>
             <Button disabled>
               <PlusCircle className="mr-2 h-5 w-5" />
@@ -48,7 +48,7 @@ export default function HomePage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
         <h1 className="text-3xl font-bold font-headline" key={pageTitleKey}>{t('home.popularThreads', 'Popular Threads')}</h1>
         <Link href="/submit" passHref>
           <Button>
