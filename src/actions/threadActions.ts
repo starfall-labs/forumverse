@@ -145,3 +145,12 @@ export async function getUserByUsernameAction(username: string): Promise<User | 
   const user = (global.mockDataStore.users || []).find((u: User) => u.username === username);
   return user ? JSON.parse(JSON.stringify(user)) : undefined;
 }
+
+export async function getThreadsByAuthorUsernameAction(username: string): Promise<Thread[]> {
+  const user = (global.mockDataStore.users || []).find((u: User) => u.username === username);
+  if (!user) {
+    return [];
+  }
+  const userThreads = (global.mockDataStore.threads || []).filter((t: Thread) => t.author.id === user.id);
+  return JSON.parse(JSON.stringify(userThreads));
+}

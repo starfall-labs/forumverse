@@ -27,7 +27,7 @@ export { SUPPORTED_LANGUAGES };
 
 const PREDEFINED_TRANSLATIONS: AllTranslations = {
   en: {
-    'navbar.createPost': 'Create Thread', // Changed
+    'navbar.createPost': 'Create Thread',
     'navbar.changeLanguage': 'Change language',
     'navbar.selectLanguage': 'Select Language',
     'navbar.logout': 'Log out',
@@ -63,16 +63,16 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'signupPage.loginPrompt': 'Already have an account?',
     'signupPage.loginLink': 'Log in',
 
-    'submitPage.title': 'Create a new thread', // Changed
-    'submitPage.description': 'Share your thoughts with the ForumVerse community.', // Kept generic
+    'submitPage.title': 'Create a new thread',
+    'submitPage.description': 'Share your thoughts with the ForumVerse community.',
     'submitPage.titleLabel': 'Title',
     'submitPage.titlePlaceholder': 'Enter a descriptive title',
     'submitPage.contentLabel': 'Content',
     'submitPage.contentPlaceholder': 'Share your thoughts (Markdown not supported yet)',
     'submitPage.contentPlaceholderMarkdown': 'Share your thoughts (Markdown supported!)',
-    'submitPage.createButton': 'Create Thread', // Changed
+    'submitPage.createButton': 'Create Thread',
     'submitPage.submittingButton': 'Submitting...',
-    'submitPage.loginPrompt': 'Please log in to create a thread.', // Changed
+    'submitPage.loginPrompt': 'Please log in to create a thread.',
 
     'notFoundPage.title': 'Page Not Found',
     'notFoundPage.description': "Oops! The page you're looking for doesn't seem to exist.",
@@ -115,11 +115,11 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'toast.signupFailedTitle': 'Signup Failed',
     'toast.signupFailedDescription': 'This email or username might already be in use or an error occurred.',
     'toast.authErrorTitle': 'Authentication Error',
-    'toast.authErrorDescriptionCreatePost': 'You must be logged in to create a thread.', // Changed
+    'toast.authErrorDescriptionCreatePost': 'You must be logged in to create a thread.',
     'toast.authErrorDescriptionComment': 'You must be logged in to comment.',
-    'toast.errorCreatingPostTitle': 'Error creating thread', // Changed
-    'toast.postCreatedTitle': 'Thread created!', // Changed
-    'toast.postCreatedDescription': 'Your thread has been successfully created.', // Changed
+    'toast.errorCreatingPostTitle': 'Error creating thread',
+    'toast.postCreatedTitle': 'Thread created!',
+    'toast.postCreatedDescription': 'Your thread has been successfully created.',
     'toast.errorPostingCommentTitle': 'Error posting comment',
     'toast.commentPostedTitle': 'Comment posted!',
     'toast.commentPostedDescription': 'Your comment has been added.',
@@ -131,15 +131,15 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'userProfile.about': 'About',
     'userProfile.memberSince': 'Member since:',
     'userProfile.moreComingSoon': 'More profile information and activity will be displayed here in the future.',
-    'userProfile.postsBy': "Threads by", // Changed
+    'userProfile.postsBy': "Threads by",
     'userProfile.commentsBy': "Comments by",
-    'userProfile.noPosts': "This user hasn't created any threads yet.", // Changed
+    'userProfile.noPosts': "This user hasn't created any threads yet.",
     'userProfile.noComments': "This user hasn't commented on anything yet.",
 
 
   },
   vi: {
-    'navbar.createPost': 'Tạo Chủ đề', // Changed
+    'navbar.createPost': 'Tạo Chủ đề',
     'navbar.changeLanguage': 'Thay đổi ngôn ngữ',
     'navbar.selectLanguage': 'Chọn Ngôn Ngữ',
     'navbar.logout': 'Đăng xuất',
@@ -175,16 +175,16 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'signupPage.loginPrompt': 'Đã có tài khoản?',
     'signupPage.loginLink': 'Đăng nhập',
 
-    'submitPage.title': 'Tạo chủ đề mới', // Changed
-    'submitPage.description': 'Chia sẻ suy nghĩ của bạn với cộng đồng ForumVerse.', // Kept generic
+    'submitPage.title': 'Tạo chủ đề mới',
+    'submitPage.description': 'Chia sẻ suy nghĩ của bạn với cộng đồng ForumVerse.',
     'submitPage.titleLabel': 'Tiêu đề',
     'submitPage.titlePlaceholder': 'Nhập tiêu đề mô tả',
     'submitPage.contentLabel': 'Nội dung',
     'submitPage.contentPlaceholder': 'Chia sẻ suy nghĩ của bạn (Chưa hỗ trợ Markdown)',
     'submitPage.contentPlaceholderMarkdown': 'Chia sẻ suy nghĩ của bạn (Hỗ trợ Markdown!)',
-    'submitPage.createButton': 'Tạo Chủ đề', // Changed
+    'submitPage.createButton': 'Tạo Chủ đề',
     'submitPage.submittingButton': 'Đang gửi...',
-    'submitPage.loginPrompt': 'Vui lòng đăng nhập để tạo chủ đề.', // Changed
+    'submitPage.loginPrompt': 'Vui lòng đăng nhập để tạo chủ đề.',
 
     'notFoundPage.title': 'Không Tìm Thấy Trang',
     'notFoundPage.description': "Rất tiếc! Trang bạn đang tìm kiếm dường như không tồn tại.",
@@ -228,11 +228,11 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'toast.signupFailedTitle': 'Đăng ký thất bại',
     'toast.signupFailedDescription': 'Email hoặc tên người dùng này có thể đã được sử dụng hoặc đã xảy ra lỗi.',
     'toast.authErrorTitle': 'Lỗi xác thực',
-    'toast.authErrorDescriptionCreatePost': 'Bạn phải đăng nhập để tạo chủ đề.', // Changed
+    'toast.authErrorDescriptionCreatePost': 'Bạn phải đăng nhập để tạo chủ đề.',
     'toast.authErrorDescriptionComment': 'Bạn phải đăng nhập để bình luận.',
-    'toast.errorCreatingPostTitle': 'Lỗi khi tạo chủ đề', // Changed
-    'toast.postCreatedTitle': 'Đã tạo chủ đề!', // Changed
-    'toast.postCreatedDescription': 'Chủ đề của bạn đã được tạo thành công.', // Changed
+    'toast.errorCreatingPostTitle': 'Lỗi khi tạo chủ đề',
+    'toast.postCreatedTitle': 'Đã tạo chủ đề!',
+    'toast.postCreatedDescription': 'Chủ đề của bạn đã được tạo thành công.',
     'toast.errorPostingCommentTitle': 'Lỗi khi đăng bình luận',
     'toast.commentPostedTitle': 'Đã đăng bình luận!',
     'toast.commentPostedDescription': 'Bình luận của bạn đã được thêm.',
@@ -244,9 +244,9 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'userProfile.about': 'Về',
     'userProfile.memberSince': 'Thành viên từ:',
     'userProfile.moreComingSoon': 'Thông tin hồ sơ và hoạt động khác sẽ được hiển thị ở đây trong tương lai.',
-    'userProfile.postsBy': "Chủ đề của", // Changed
+    'userProfile.postsBy': "Chủ đề của",
     'userProfile.commentsBy': "Bình luận của",
-    'userProfile.noPosts': "Người dùng này chưa tạo chủ đề nào.", // Changed
+    'userProfile.noPosts': "Người dùng này chưa tạo chủ đề nào.",
     'userProfile.noComments': "Người dùng này chưa bình luận về bất cứ điều gì.",
   }
 };
@@ -263,10 +263,13 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       if (storedLanguage && SUPPORTED_LANGUAGES.some(l => l.code === storedLanguage)) {
         setCurrentLanguageState(storedLanguage);
       } else {
+        // Ensure default language is set if nothing valid is in localStorage
         localStorage.setItem(CURRENT_LANGUAGE_KEY, 'en'); 
       }
     } catch (error) {
       console.error("Failed to load language settings from localStorage", error);
+      // Default to 'en' if localStorage access fails
+      setCurrentLanguageState('en');
     } finally {
       setIsInitializing(false);
     }
@@ -293,15 +296,21 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       return langTranslations[key];
     }
     
+    // Fallback to English if current language translation is missing
     if (currentLanguage !== 'en' && translations.en && translations.en[key] !== undefined) {
+      // console.warn(`Translation missing for key '${key}' in language '${currentLanguage}'. Falling back to English.`);
       return translations.en[key];
     }
     
+    // Fallback to default text if English is also missing (or if current lang is English and key is missing)
+    // console.warn(`Translation missing for key '${key}' in English or current language '${currentLanguage}'. Using default text.`);
     return defaultText;
   }, [currentLanguage, translations, isInitializing]);
 
 
   if (isInitializing) {
+    // While initializing (e.g., reading from localStorage), return null or a loading indicator
+    // to prevent rendering with potentially incorrect language settings.
     return null; 
   }
 
@@ -311,4 +320,3 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     </LanguageContext.Provider>
   );
 };
-
