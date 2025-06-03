@@ -15,7 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ShieldCheck, Users, FileText, AlertTriangle, Trash2, UserCog, UserCheck, UserX } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +28,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 export default function AdminPage() {
   const { user: currentUser, isLoading: authLoading } = useAuth();
@@ -151,7 +152,7 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="users" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
+        <TabsList className="grid w-full grid-cols-2 md:w-[400px] mb-6">
           <TabsTrigger value="users">
             <Users className="mr-2 h-5 w-5" />
             {t('adminPage.tabs.users', 'Manage Users')}
@@ -162,7 +163,7 @@ export default function AdminPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="users" className="mt-6">
+        <TabsContent value="users">
           <Card>
             <CardHeader>
               <CardTitle>{t('adminPage.usersTable.title', 'All Users')}</CardTitle>
@@ -172,33 +173,33 @@ export default function AdminPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t('adminPage.usersTable.username', 'Username')}</TableHead>
-                    <TableHead>{t('adminPage.usersTable.displayName', 'Display Name')}</TableHead>
-                    <TableHead>{t('adminPage.usersTable.email', 'Email')}</TableHead>
-                    <TableHead>{t('adminPage.usersTable.joined', 'Joined')}</TableHead>
+                    <TableHead className="w-[150px] sm:w-[200px]">{t('adminPage.usersTable.username', 'Username')}</TableHead>
+                    <TableHead className="w-[150px] sm:w-[200px]">{t('adminPage.usersTable.displayName', 'Display Name')}</TableHead>
+                    <TableHead className="w-[200px] sm:w-[250px]">{t('adminPage.usersTable.email', 'Email')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t('adminPage.usersTable.joined', 'Joined')}</TableHead>
                     <TableHead>{t('adminPage.usersTable.role', 'Role')}</TableHead>
-                    <TableHead className="text-right">{t('adminPage.usersTable.actions', 'Actions')}</TableHead>
+                    <TableHead className="text-right min-w-[180px]">{t('adminPage.usersTable.actions', 'Actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {users.map((u) => (
                     <TableRow key={u.id}>
-                      <TableCell>
+                      <TableCell className="max-w-[150px] sm:max-w-[200px] break-words">
                         <Link href={`/u/${u.username}`} className="hover:underline text-primary font-medium">
                             {u.username}
                         </Link>
                         </TableCell>
-                      <TableCell>{u.displayName}</TableCell>
-                      <TableCell>{u.email}</TableCell>
-                      <TableCell>{u.createdAt ? formatDistanceToNow(new Date(u.createdAt), { addSuffix: true }) : '-'}</TableCell>
+                      <TableCell className="max-w-[150px] sm:max-w-[200px] break-words">{u.displayName}</TableCell>
+                      <TableCell className="max-w-[200px] sm:max-w-[250px] break-words">{u.email}</TableCell>
+                      <TableCell className="hidden md:table-cell">{u.createdAt ? formatDistanceToNow(new Date(u.createdAt), { addSuffix: true }) : '-'}</TableCell>
                       <TableCell>
                         {u.isAdmin ? (
-                          <Badge variant="default" className="bg-accent hover:bg-accent/90">
+                          <Badge variant="default" className="bg-accent hover:bg-accent/90 whitespace-nowrap">
                             <UserCog className="mr-1 h-3.5 w-3.5" />
                             {t('adminPage.usersTable.adminRole', 'Admin')}
                           </Badge>
                         ) : (
-                          <Badge variant="secondary">{t('adminPage.usersTable.userRole', 'User')}</Badge>
+                          <Badge variant="secondary" className="whitespace-nowrap">{t('adminPage.usersTable.userRole', 'User')}</Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-right space-x-1">
@@ -209,6 +210,7 @@ export default function AdminPage() {
                             onClick={() => openConfirmationDialog('removeAdmin', u)}
                             disabled={actionInProgress === u.id || (currentUser.id === u.id && users.filter(usr => usr.isAdmin).length <= 1)}
                             title={ (currentUser.id === u.id && users.filter(usr => usr.isAdmin).length <= 1) ? t('adminPage.usersTable.cannotRemoveLastAdminTooltip', 'Cannot remove the last admin.') : t('adminPage.usersTable.removeAdminButton', 'Remove Admin')}
+                            className="whitespace-nowrap"
                           >
                             <UserX className="mr-1 h-4 w-4" /> {t('adminPage.usersTable.removeAdminButtonShort', 'Demote')}
                           </Button>
@@ -219,6 +221,7 @@ export default function AdminPage() {
                             onClick={() => openConfirmationDialog('makeAdmin', u)}
                             disabled={actionInProgress === u.id}
                             title={t('adminPage.usersTable.makeAdminButton', 'Make Admin')}
+                            className="whitespace-nowrap"
                           >
                              <UserCheck className="mr-1 h-4 w-4" /> {t('adminPage.usersTable.makeAdminButtonShort', 'Promote')}
                           </Button>
@@ -229,6 +232,7 @@ export default function AdminPage() {
                           onClick={() => openConfirmationDialog('deleteUser', u)}
                           disabled={actionInProgress === u.id || currentUser.id === u.id}
                           title={currentUser.id === u.id ? t('adminPage.usersTable.cannotDeleteSelfTooltip', 'Cannot delete yourself.') : t('adminPage.usersTable.deleteUserButton', 'Delete User')}
+                          className="whitespace-nowrap"
                         >
                           <Trash2 className="mr-1 h-4 w-4" /> {t('adminPage.usersTable.deleteUserButtonShort', 'Delete')}
                         </Button>
@@ -242,7 +246,7 @@ export default function AdminPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="threads" className="mt-6">
+        <TabsContent value="threads">
           <Card>
             <CardHeader>
               <CardTitle>{t('adminPage.threadsTable.title', 'All Threads')}</CardTitle>
@@ -252,9 +256,9 @@ export default function AdminPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[40%]">{t('adminPage.threadsTable.titleHeader', 'Title')}</TableHead>
-                    <TableHead>{t('adminPage.threadsTable.author', 'Author')}</TableHead>
-                    <TableHead>{t('adminPage.threadsTable.createdAt', 'Created At')}</TableHead>
+                    <TableHead className="w-[40%] min-w-[200px]">{t('adminPage.threadsTable.titleHeader', 'Title')}</TableHead>
+                    <TableHead className="w-[150px] sm:w-[200px]">{t('adminPage.threadsTable.author', 'Author')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t('adminPage.threadsTable.createdAt', 'Created At')}</TableHead>
                     <TableHead className="text-center">{t('adminPage.threadsTable.comments', 'Comments')}</TableHead>
                     <TableHead className="text-center">{t('adminPage.threadsTable.score', 'Score')}</TableHead>
                   </TableRow>
@@ -262,18 +266,18 @@ export default function AdminPage() {
                 <TableBody>
                   {threads.map((thread) => (
                     <TableRow key={thread.id}>
-                      <TableCell>
+                      <TableCell className="max-w-xs md:max-w-md lg:max-w-lg break-words">
                         <Link href={`/t/${thread.id}`} className="hover:underline text-primary font-medium">
                           {thread.title}
                         </Link>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="max-w-[150px] sm:max-w-[200px] break-words">
                         <Link href={`/u/${thread.author.username}`} className="hover:underline">
                             {getAuthorDisplayName(thread.author)}
                         </Link>
                          {thread.author.id === 'deleted_user_placeholder' && <span className="text-xs text-muted-foreground ml-1">({t('adminPage.threadsTable.deletedUser', 'Deleted')})</span>}
                       </TableCell>
-                      <TableCell>{formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}</TableCell>
+                      <TableCell className="hidden md:table-cell whitespace-nowrap">{formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}</TableCell>
                       <TableCell className="text-center">{thread.commentCount}</TableCell>
                       <TableCell className="text-center">{thread.upvotes - thread.downvotes}</TableCell>
                     </TableRow>
@@ -309,7 +313,7 @@ export default function AdminPage() {
                   if (dialogState.actionType === 'removeAdmin' && dialogState.targetUser) handleSetAdminStatus(dialogState.targetUser.id, false);
                   if (dialogState.actionType === 'deleteUser' && dialogState.targetUser) handleDeleteUser(dialogState.targetUser.id);
                 }}
-                className={dialogState.actionType === 'deleteUser' ? buttonVariants({ variant: "destructive" }) : ""}
+                className={cn(buttonVariants({ variant: "default" }), dialogState.actionType === 'deleteUser' && buttonVariants({ variant: "destructive" }))}
               >
                 {dialogState.actionType === 'deleteUser' ? t('adminPage.dialog.confirmDeleteButton', 'Delete') : t('adminPage.dialog.confirmButton', 'Confirm')}
               </AlertDialogAction>
