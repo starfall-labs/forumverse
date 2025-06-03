@@ -1,4 +1,5 @@
 
+'use client';
 import type { Thread } from '@/lib/types';
 import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,12 +9,14 @@ import { VoteButtons } from '@/components/shared/VoteButtons';
 import { voteThreadAction } from '@/actions/threadActions';
 import { formatDistanceToNow } from 'date-fns';
 import { UserAvatar } from '@/components/shared/UserAvatar';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ThreadItemProps {
   thread: Thread;
 }
 
 export function ThreadItem({ thread }: ThreadItemProps) {
+  const { t } = useTranslation();
 
   const handleVote = async (itemId: string, type: 'upvote' | 'downvote') => {
     await voteThreadAction(itemId, type);
@@ -37,7 +40,7 @@ export function ThreadItem({ thread }: ThreadItemProps) {
           <CardHeader className="pb-2 pt-4 px-4">
             <div className="text-xs text-muted-foreground flex items-center space-x-2">
               <UserAvatar user={thread.author} className="h-5 w-5" />
-              <span>Posted by {primaryAuthorName} (u/{authorUsername})</span>
+              <span>{t('threadItem.postedBy', 'Posted by')} {primaryAuthorName} (u/{authorUsername})</span>
               <span>•</span>
               <time dateTime={thread.createdAt}>
                 {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}
@@ -56,7 +59,7 @@ export function ThreadItem({ thread }: ThreadItemProps) {
             <Link href={`/t/${thread.id}#comments`} passHref>
               <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
                 <MessageSquare className="mr-2 h-4 w-4" />
-                {thread.commentCount} Comments
+                {thread.commentCount} {t('threadItem.commentsLink', 'Comments')}
               </Button>
             </Link>
           </CardFooter>
@@ -65,3 +68,5 @@ export function ThreadItem({ thread }: ThreadItemProps) {
     </Card>
   );
 }
+
+    

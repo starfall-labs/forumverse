@@ -3,7 +3,6 @@
 
 import type React from 'react';
 import { createContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-// Removed: import { translateText, type TranslateTextInput } from '@/ai/flows/translate-text-flow';
 
 type TranslationMap = Record<string, string>; // { key: translation }
 type AllTranslations = Record<string, TranslationMap>; // { langCode: TranslationMap }
@@ -11,28 +10,23 @@ type AllTranslations = Record<string, TranslationMap>; // { langCode: Translatio
 interface LanguageContextType {
   currentLanguage: string;
   setLanguage: (language: string) => void;
-  getTranslation: (key: string, defaultText: string) => string; // Now synchronous
-  translations: AllTranslations; // Using the new type
+  getTranslation: (key: string, defaultText: string) => string;
+  translations: AllTranslations;
   isInitializing: boolean;
 }
 
 export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 const CURRENT_LANGUAGE_KEY = 'forumverse_current_language';
-// Removed: const TRANSLATIONS_KEY = 'forumverse_translations';
 
 const SUPPORTED_LANGUAGES = [
   { code: 'en', name: 'English' },
   { code: 'vi', name: 'Tiếng Việt' },
-  // Add more languages here
 ];
 export { SUPPORTED_LANGUAGES };
 
-// Predefined translations
 const PREDEFINED_TRANSLATIONS: AllTranslations = {
   en: {
-    // English defaults are usually the 'defaultText' passed to t()
-    // but we can define them here for consistency or if keys are abstract
     'navbar.createPost': 'Create Post',
     'navbar.changeLanguage': 'Change language',
     'navbar.selectLanguage': 'Select Language',
@@ -44,6 +38,89 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'home.loadingThreads': 'Loading threads...',
     'home.noThreads': 'No threads yet.',
     'home.beTheFirst': 'Be the first to start a discussion!',
+
+    'loginPage.title': 'Welcome Back!',
+    'loginPage.description': 'Log in to continue to ForumVerse.',
+    'loginPage.emailLabel': 'Email',
+    'loginPage.passwordLabel': 'Password',
+    'loginPage.demoHint': 'For demo, try: alice@example.com / password123',
+    'loginPage.loginButton': 'Log In',
+    'loginPage.loggingInButton': 'Logging in...',
+    'loginPage.signupPrompt': "Don't have an account?",
+    'loginPage.signupLink': 'Sign up',
+
+    'signupPage.title': 'Create an Account',
+    'signupPage.description': 'Join ForumVerse today!',
+    'signupPage.emailLabel': 'Email',
+    'signupPage.usernameLabel': 'Username',
+    'signupPage.displayNameLabel': 'Display Name (Optional)',
+    'signupPage.passwordLabel': 'Password',
+    'signupPage.confirmPasswordLabel': 'Confirm Password',
+    'signupPage.signupButton': 'Sign Up',
+    'signupPage.signingUpButton': 'Signing up...',
+    'signupPage.loginPrompt': 'Already have an account?',
+    'signupPage.loginLink': 'Log in',
+
+    'submitPage.title': 'Create a new post',
+    'submitPage.description': 'Share your thoughts with the ForumVerse community.',
+    'submitPage.titleLabel': 'Title',
+    'submitPage.titlePlaceholder': 'Enter a descriptive title',
+    'submitPage.contentLabel': 'Content',
+    'submitPage.contentPlaceholder': 'Share your thoughts (Markdown not supported yet)',
+    'submitPage.createButton': 'Create Post',
+    'submitPage.submittingButton': 'Submitting...',
+    'submitPage.loginPrompt': 'Please log in to create a post.',
+
+    'notFoundPage.title': 'Page Not Found',
+    'notFoundPage.description': "Oops! The page you're looking for doesn't seem to exist.",
+    'notFoundPage.homeButton': 'Return Home',
+
+    'threadPage.commentsHeading': 'Comments',
+
+    'commentSection.leaveComment': 'Leave a comment',
+    'commentSection.noComments': 'No comments yet. Be the first to share your thoughts!',
+
+    'commentForm.replyPlaceholder': 'Write a reply...',
+    'commentForm.commentPlaceholder': 'What are your thoughts?',
+    'commentForm.loginPrompt': 'Please log in to comment.',
+    'commentForm.replyButton': 'Reply',
+    'commentForm.replyingButton': 'Replying...',
+    'commentForm.commentButton': 'Comment',
+    'commentForm.commentingButton': 'Commenting...',
+
+    'summarizeButton.buttonText': 'Summarize Thread',
+    'summarizeButton.buttonLoadingText': 'Summarizing...',
+    'summarizeButton.dialogTitlePrefix': 'Summary of:',
+    'summarizeButton.dialogDescription': 'AI-generated summary of the key points:',
+    'summarizeButton.dialogLoadingSummary': 'Loading summary...',
+    'summarizeButton.dialogCloseButton': 'Close',
+    
+    'threadItem.commentsLink': 'Comments',
+    'threadItem.postedBy': 'Posted by',
+
+    'commentItem.replyButton': 'Reply',
+
+    'toast.loginSuccessTitle': 'Login Successful',
+    'toast.loginSuccessDescription': 'Welcome back!',
+    'toast.loginFailedTitle': 'Login Failed',
+    'toast.loginFailedDescription': "Invalid email or password. Try 'alice@example.com' with 'password123'.",
+    'toast.signupSuccessTitle': 'Signup Successful',
+    'toast.signupSuccessDescription': 'Welcome to ForumVerse! You are now logged in.',
+    'toast.signupFailedTitle': 'Signup Failed',
+    'toast.signupFailedDescription': 'This email or username might already be in use or an error occurred.',
+    'toast.authErrorTitle': 'Authentication Error',
+    'toast.authErrorDescriptionCreatePost': 'You must be logged in to create a post.',
+    'toast.authErrorDescriptionComment': 'You must be logged in to comment.',
+    'toast.errorCreatingPostTitle': 'Error creating post',
+    'toast.postCreatedTitle': 'Post created!',
+    'toast.postCreatedDescription': 'Your post has been successfully created.',
+    'toast.errorPostingCommentTitle': 'Error posting comment',
+    'toast.commentPostedTitle': 'Comment posted!',
+    'toast.commentPostedDescription': 'Your comment has been added.',
+    'toast.summarizeCannotSummarizeTitle': 'Cannot Summarize',
+    'toast.summarizeCannotSummarizeDescription': 'Thread content is empty.',
+    'toast.summarizeFailedTitle': 'Summarization Failed',
+    'toast.summarizeFailedDescription': 'Could not generate summary for this thread.',
   },
   vi: {
     'navbar.createPost': 'Tạo Bài Viết',
@@ -57,17 +134,97 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'home.loadingThreads': 'Đang tải chủ đề...',
     'home.noThreads': 'Chưa có chủ đề nào.',
     'home.beTheFirst': 'Hãy là người đầu tiên bắt đầu một cuộc thảo luận!',
+
+    'loginPage.title': 'Chào mừng trở lại!',
+    'loginPage.description': 'Đăng nhập để tiếp tục vào ForumVerse.',
+    'loginPage.emailLabel': 'Email',
+    'loginPage.passwordLabel': 'Mật khẩu',
+    'loginPage.demoHint': 'Thử với: alice@example.com / password123',
+    'loginPage.loginButton': 'Đăng Nhập',
+    'loginPage.loggingInButton': 'Đang đăng nhập...',
+    'loginPage.signupPrompt': 'Chưa có tài khoản?',
+    'loginPage.signupLink': 'Đăng ký',
+
+    'signupPage.title': 'Tạo Tài Khoản',
+    'signupPage.description': 'Tham gia ForumVerse ngay hôm nay!',
+    'signupPage.emailLabel': 'Email',
+    'signupPage.usernameLabel': 'Tên người dùng',
+    'signupPage.displayNameLabel': 'Tên hiển thị (Tùy chọn)',
+    'signupPage.passwordLabel': 'Mật khẩu',
+    'signupPage.confirmPasswordLabel': 'Xác nhận Mật khẩu',
+    'signupPage.signupButton': 'Đăng Ký',
+    'signupPage.signingUpButton': 'Đang đăng ký...',
+    'signupPage.loginPrompt': 'Đã có tài khoản?',
+    'signupPage.loginLink': 'Đăng nhập',
+
+    'submitPage.title': 'Tạo bài viết mới',
+    'submitPage.description': 'Chia sẻ suy nghĩ của bạn với cộng đồng ForumVerse.',
+    'submitPage.titleLabel': 'Tiêu đề',
+    'submitPage.titlePlaceholder': 'Nhập tiêu đề mô tả',
+    'submitPage.contentLabel': 'Nội dung',
+    'submitPage.contentPlaceholder': 'Chia sẻ suy nghĩ của bạn (Chưa hỗ trợ Markdown)',
+    'submitPage.createButton': 'Tạo Bài Viết',
+    'submitPage.submittingButton': 'Đang gửi...',
+    'submitPage.loginPrompt': 'Vui lòng đăng nhập để tạo bài viết.',
+
+    'notFoundPage.title': 'Không Tìm Thấy Trang',
+    'notFoundPage.description': 'Rất tiếc! Trang bạn đang tìm kiếm dường như không tồn tại.',
+    'notFoundPage.homeButton': 'Quay Về Trang Chủ',
+
+    'threadPage.commentsHeading': 'Bình luận',
+
+    'commentSection.leaveComment': 'Để lại bình luận',
+    'commentSection.noComments': 'Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ suy nghĩ của bạn!',
+
+    'commentForm.replyPlaceholder': 'Viết một phản hồi...',
+    'commentForm.commentPlaceholder': 'Bạn nghĩ gì về điều này?',
+    'commentForm.loginPrompt': 'Vui lòng đăng nhập để bình luận.',
+    'commentForm.replyButton': 'Phản hồi',
+    'commentForm.replyingButton': 'Đang phản hồi...',
+    'commentForm.commentButton': 'Bình luận',
+    'commentForm.commentingButton': 'Đang bình luận...',
+
+    'summarizeButton.buttonText': 'Tóm tắt Chủ đề',
+    'summarizeButton.buttonLoadingText': 'Đang tóm tắt...',
+    'summarizeButton.dialogTitlePrefix': 'Tóm tắt của:',
+    'summarizeButton.dialogDescription': 'Tóm tắt các điểm chính do AI tạo:',
+    'summarizeButton.dialogLoadingSummary': 'Đang tải tóm tắt...',
+    'summarizeButton.dialogCloseButton': 'Đóng',
+
+    'threadItem.commentsLink': 'Bình luận',
+    'threadItem.postedBy': 'Đăng bởi',
+
+    'commentItem.replyButton': 'Phản hồi',
+
+    'toast.loginSuccessTitle': 'Đăng nhập thành công',
+    'toast.loginSuccessDescription': 'Chào mừng bạn trở lại!',
+    'toast.loginFailedTitle': 'Đăng nhập thất bại',
+    'toast.loginFailedDescription': "Email hoặc mật khẩu không hợp lệ. Thử 'alice@example.com' với 'password123'.",
+    'toast.signupSuccessTitle': 'Đăng ký thành công',
+    'toast.signupSuccessDescription': 'Chào mừng đến với ForumVerse! Bạn đã đăng nhập.',
+    'toast.signupFailedTitle': 'Đăng ký thất bại',
+    'toast.signupFailedDescription': 'Email hoặc tên người dùng này có thể đã được sử dụng hoặc đã xảy ra lỗi.',
+    'toast.authErrorTitle': 'Lỗi xác thực',
+    'toast.authErrorDescriptionCreatePost': 'Bạn phải đăng nhập để tạo bài viết.',
+    'toast.authErrorDescriptionComment': 'Bạn phải đăng nhập để bình luận.',
+    'toast.errorCreatingPostTitle': 'Lỗi khi tạo bài viết',
+    'toast.postCreatedTitle': 'Đã tạo bài viết!',
+    'toast.postCreatedDescription': 'Bài viết của bạn đã được tạo thành công.',
+    'toast.errorPostingCommentTitle': 'Lỗi khi đăng bình luận',
+    'toast.commentPostedTitle': 'Đã đăng bình luận!',
+    'toast.commentPostedDescription': 'Bình luận của bạn đã được thêm.',
+    'toast.summarizeCannotSummarizeTitle': 'Không thể tóm tắt',
+    'toast.summarizeCannotSummarizeDescription': 'Nội dung chủ đề trống.',
+    'toast.summarizeFailedTitle': 'Tóm tắt thất bại',
+    'toast.summarizeFailedDescription': 'Không thể tạo tóm tắt cho chủ đề này.',
   }
 };
 
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentLanguage, setCurrentLanguageState] = useState<string>('en');
-  // Initialize translations with predefined ones.
-  // In a larger app, these might come from JSON files.
-  const [translations, setTranslations] = useState<AllTranslations>(PREDEFINED_TRANSLATIONS);
+  const [translations] = useState<AllTranslations>(PREDEFINED_TRANSLATIONS);
   const [isInitializing, setIsInitializing] = useState(true);
-  // Removed: const [pendingTranslations, setPendingTranslations] = useState<Record<string, Promise<string>>>({});
 
   useEffect(() => {
     try {
@@ -75,9 +232,8 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       if (storedLanguage && SUPPORTED_LANGUAGES.some(l => l.code === storedLanguage)) {
         setCurrentLanguageState(storedLanguage);
       } else {
-        localStorage.setItem(CURRENT_LANGUAGE_KEY, 'en'); // Default to English if invalid or not set
+        localStorage.setItem(CURRENT_LANGUAGE_KEY, 'en'); 
       }
-      // Removed loading translations from localStorage as they are predefined now
     } catch (error) {
       console.error("Failed to load language settings from localStorage", error);
     } finally {
@@ -98,28 +254,24 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   }, []);
 
-  // Removed: saveTranslationsToStorage useCallback
-
   const getTranslation = useCallback((key: string, defaultText: string): string => {
-    if (isInitializing) return defaultText; // Still return default if not initialized
-    if (currentLanguage === 'en') {
-      // Optionally, you can lookup in PREDEFINED_TRANSLATIONS.en as well
-      // or just rely on defaultText being the English version.
-      return PREDEFINED_TRANSLATIONS.en[key] || defaultText;
-    }
-
+    if (isInitializing) return defaultText;
+    
     const langTranslations = translations[currentLanguage];
-    if (langTranslations && langTranslations[key]) {
+    if (langTranslations && langTranslations[key] !== undefined) {
       return langTranslations[key];
     }
-    
-    // Fallback to English or defaultText if translation for the key is missing in the current language
-    return PREDEFINED_TRANSLATIONS.en[key] || defaultText;
+    // Fallback to English if key exists in English but not current language
+    if (currentLanguage !== 'en' && translations.en && translations.en[key] !== undefined) {
+      return translations.en[key];
+    }
+    // Fallback to default text if key doesn't exist in any language
+    return defaultText;
   }, [currentLanguage, translations, isInitializing]);
 
 
   if (isInitializing) {
-    return null; // Or a loading spinner for the whole app if preferred
+    return null; 
   }
 
   return (
@@ -128,3 +280,5 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     </LanguageContext.Provider>
   );
 };
+
+    

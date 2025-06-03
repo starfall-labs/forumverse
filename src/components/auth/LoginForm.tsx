@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,10 +11,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
-  password: z.string().min(1, { message: 'Password is required.' }), // Simplified for mock
+  password: z.string().min(1, { message: 'Password is required.' }),
 });
 
 export function LoginForm() {
@@ -21,12 +23,13 @@ export function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: 'alice@example.com', // Pre-fill for demo
+      password: 'password123', // Pre-fill for demo
     },
   });
 
@@ -36,12 +39,19 @@ export function LoginForm() {
     setIsLoading(false);
 
     if (success) {
-      toast({ title: "Login Successful", description: "Welcome back!" });
+      toast({ 
+        title: t('toast.loginSuccessTitle', "Login Successful"), 
+        description: t('toast.loginSuccessDescription', "Welcome back!") 
+      });
       router.push('/');
-      router.refresh(); // to update navbar state potentially
+      router.refresh(); 
     } else {
-      toast({ title: "Login Failed", description: "Invalid email or password. Try 'alice@example.com' with 'password123'.", variant: "destructive" });
-      form.setError("email", { type: "manual", message: " " }); // Clear previous errors on fields
+      toast({ 
+        title: t('toast.loginFailedTitle', "Login Failed"), 
+        description: t('toast.loginFailedDescription', "Invalid email or password. Try 'alice@example.com' with 'password123'."), 
+        variant: "destructive" 
+      });
+      form.setError("email", { type: "manual", message: " " }); 
       form.setError("password", { type: "manual", message: "Invalid email or password." });
     }
   }
@@ -54,7 +64,7 @@ export function LoginForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{t('loginPage.emailLabel', 'Email')}</FormLabel>
               <FormControl>
                 <Input type="email" placeholder="you@example.com" {...field} disabled={isLoading} />
               </FormControl>
@@ -67,21 +77,23 @@ export function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{t('loginPage.passwordLabel', 'Password')}</FormLabel>
               <FormControl>
                 <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
               </FormControl>
               <FormDescription>
-                For demo, try: alice@example.com / password123
+                {t('loginPage.demoHint', 'For demo, try: alice@example.com / password123')}
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Logging in...' : 'Log In'}
+          {isLoading ? t('loginPage.loggingInButton', 'Logging in...') : t('loginPage.loginButton', 'Log In')}
         </Button>
       </form>
     </Form>
   );
 }
+
+    

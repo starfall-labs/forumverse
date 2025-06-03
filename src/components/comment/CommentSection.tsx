@@ -1,7 +1,10 @@
+
+'use client';
 import type { Comment as CommentType } from '@/lib/types';
 import { CommentItem } from './CommentItem';
 import { CommentForm } from './CommentForm';
 import { Card, CardContent } from '@/components/ui/card';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CommentSectionProps {
   threadId: string;
@@ -9,11 +12,12 @@ interface CommentSectionProps {
 }
 
 export function CommentSection({ threadId, comments }: CommentSectionProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <Card>
         <CardContent className="p-4 md:p-6">
-          <h3 className="text-lg font-semibold mb-4 font-headline">Leave a comment</h3>
+          <h3 className="text-lg font-semibold mb-4 font-headline">{t('commentSection.leaveComment', 'Leave a comment')}</h3>
           <CommentForm threadId={threadId} />
         </CardContent>
       </Card>
@@ -25,8 +29,10 @@ export function CommentSection({ threadId, comments }: CommentSectionProps) {
           ))}
         </div>
       ) : (
-        <p className="text-muted-foreground text-center py-4">No comments yet. Be the first to share your thoughts!</p>
+        <p className="text-muted-foreground text-center py-4">{t('commentSection.noComments', 'No comments yet. Be the first to share your thoughts!')}</p>
       )}
     </div>
   );
 }
+
+    

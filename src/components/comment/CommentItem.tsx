@@ -11,6 +11,7 @@ import { voteCommentAction } from '@/actions/threadActions';
 import { formatDistanceToNow } from 'date-fns';
 import { MessageSquareReply } from 'lucide-react';
 import { CommentForm } from './CommentForm';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CommentItemProps {
   comment: CommentType;
@@ -20,6 +21,7 @@ interface CommentItemProps {
 
 export function CommentItem({ comment, threadId, depth = 0 }: CommentItemProps) {
   const [showReplyForm, setShowReplyForm] = useState(false);
+  const { t } = useTranslation();
 
   const handleVote = async (itemId: string, type: 'upvote' | 'downvote') => {
     await voteCommentAction(threadId, itemId, type);
@@ -59,7 +61,7 @@ export function CommentItem({ comment, threadId, depth = 0 }: CommentItemProps) 
             <p className="text-sm text-foreground whitespace-pre-wrap">{comment.content}</p>
           <CardFooter className="p-0 pt-2 flex justify-start">
             <Button variant="ghost" size="sm" onClick={() => setShowReplyForm(!showReplyForm)} className="text-xs text-muted-foreground hover:text-primary">
-              <MessageSquareReply className="mr-1 h-3 w-3" /> Reply
+              <MessageSquareReply className="mr-1 h-3 w-3" /> {t('commentItem.replyButton', 'Reply')}
             </Button>
           </CardFooter>
 
@@ -85,3 +87,5 @@ export function CommentItem({ comment, threadId, depth = 0 }: CommentItemProps) 
     </Card>
   );
 }
+
+    

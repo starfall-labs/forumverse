@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,6 +14,7 @@ import { createThreadAction } from '@/actions/threadActions';
 import { useToast } from "@/hooks/use-toast";
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const formSchema = z.object({
   title: z.string().min(5, { message: 'Title must be at least 5 characters.' }).max(150, { message: 'Title must be at most 150 characters.' }),
@@ -24,6 +26,7 @@ export function CreateThreadForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useTranslation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -35,7 +38,11 @@ export function CreateThreadForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) {
-      toast({ title: "Authentication Error", description: "You must be logged in to create a post.", variant: "destructive" });
+      toast({ 
+        title: t('toast.authErrorTitle', "Authentication Error"), 
+        description: t('toast.authErrorDescriptionCreatePost', "You must be logged in to create a post."), 
+        variant: "destructive" 
+      });
       router.push('/login');
       return;
     }
@@ -48,16 +55,22 @@ export function CreateThreadForm() {
 
     setIsSubmitting(false);
     if ('error' in result) {
-      toast({ title: "Error creating post", description: result.error, variant: "destructive" });
+      toast({ 
+        title: t('toast.errorCreatingPostTitle', "Error creating post"), 
+        description: result.error, 
+        variant: "destructive" 
+      });
     } else {
-      toast({ title: "Post created!", description: "Your post has been successfully created." });
+      toast({ 
+        title: t('toast.postCreatedTitle', "Post created!"), 
+        description: t('toast.postCreatedDescription', "Your post has been successfully created.") 
+      });
       router.push(`/t/${result.id}`);
     }
   }
 
-  if (!user && typeof window !== 'undefined') { // Check typeof window to avoid SSR issues with router.push
-     // router.push('/login'); // This can cause issues if called during render. Better to show a message or disable form.
-     return <p className="text-center text-muted-foreground">Please <Link href="/login" className="text-primary hover:underline">log in</Link> to create a post.</p>;
+  if (!user && typeof window !== 'undefined') { 
+     return <p className="text-center text-muted-foreground">{t('submitPage.loginPrompt', 'Please log in to create a post.')} <Link href="/login" className="text-primary hover:underline">{t('navbar.login', 'Log in')}</Link></p>;
   }
 
 
@@ -69,9 +82,9 @@ export function CreateThreadForm() {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title</FormLabel>
+              <FormLabel>{t('submitPage.titleLabel', 'Title')}</FormLabel>
               <FormControl>
-                <Input placeholder="Enter a descriptive title" {...field} disabled={isSubmitting || !user} />
+                <Input placeholder={t('submitPage.titlePlaceholder', 'Enter a descriptive title')} {...field} disabled={isSubmitting || !user} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -82,18 +95,20 @@ export function CreateThreadForm() {
           name="content"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Content</FormLabel>
+              <FormLabel>{t('submitPage.contentLabel', 'Content')}</FormLabel>
               <FormControl>
-                <Textarea placeholder="Share your thoughts (Markdown not supported yet)" {...field} rows={8} disabled={isSubmitting || !user} />
+                <Textarea placeholder={t('submitPage.contentPlaceholder', 'Share your thoughts (Markdown not supported yet)')} {...field} rows={8} disabled={isSubmitting || !user} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit" className="w-full" disabled={isSubmitting || !user}>
-          {isSubmitting ? 'Submitting...' : 'Create Post'}
+          {isSubmitting ? t('submitPage.submittingButton', 'Submitting...') : t('submitPage.createButton', 'Create Post')}
         </Button>
       </form>
     </Form>
   );
 }
+
+    

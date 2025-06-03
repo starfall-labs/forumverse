@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation'; // For redirecting if not logged in
+import { useRouter } from 'next/navigation'; 
 import { addCommentAction } from '@/actions/threadActions';
 import { useToast } from "@/hooks/use-toast";
 import { useState } from 'react';
-import Link from 'next/link'; // Added import
+import Link from 'next/link';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const formSchema = z.object({
   content: z.string().min(1, { message: 'Comment cannot be empty.' }).max(2000, {message: 'Comment too long.'}),
@@ -21,7 +22,7 @@ const formSchema = z.object({
 interface CommentFormProps {
   threadId: string;
   parentId?: string | null;
-  onCommentAdded?: () => void; // Optional: callback after comment is added
+  onCommentAdded?: () => void; 
 }
 
 export function CommentForm({ threadId, parentId = null, onCommentAdded }: CommentFormProps) {
@@ -29,6 +30,7 @@ export function CommentForm({ threadId, parentId = null, onCommentAdded }: Comme
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useTranslation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -39,7 +41,11 @@ export function CommentForm({ threadId, parentId = null, onCommentAdded }: Comme
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) {
-      toast({ title: "Authentication Error", description: "You must be logged in to comment.", variant: "destructive" });
+      toast({ 
+        title: t('toast.authErrorTitle', "Authentication Error"), 
+        description: t('toast.authErrorDescriptionComment', "You must be logged in to comment."), 
+        variant: "destructive" 
+      });
       router.push('/login');
       return;
     }
@@ -51,10 +57,17 @@ export function CommentForm({ threadId, parentId = null, onCommentAdded }: Comme
     
     setIsSubmitting(false);
     if ('error' in result) {
-      toast({ title: "Error posting comment", description: result.error, variant: "destructive" });
+      toast({ 
+        title: t('toast.errorPostingCommentTitle', "Error posting comment"), 
+        description: result.error, 
+        variant: "destructive" 
+      });
     } else {
-      toast({ title: "Comment posted!", description: "Your comment has been added." });
-      form.reset(); // Reset form after successful submission
+      toast({ 
+        title: t('toast.commentPostedTitle', "Comment posted!"), 
+        description: t('toast.commentPostedDescription', "Your comment has been added.") 
+      });
+      form.reset(); 
       if (onCommentAdded) {
         onCommentAdded();
       }
@@ -62,7 +75,14 @@ export function CommentForm({ threadId, parentId = null, onCommentAdded }: Comme
   }
   
   if (!user) {
-    return <p className="text-sm text-muted-foreground">Please <Link href="/login" className="text-primary hover:underline">log in</Link> to comment.</p>;
+    return (
+      <p className="text-sm text-muted-foreground">
+        {t('commentForm.loginPrompt', 'Please log in to comment.')}{' '}
+        <Link href="/login" className="text-primary hover:underline">
+          {t('navbar.login', 'Log in')}
+        </Link>
+      </p>
+    );
   }
 
   return (
@@ -75,7 +95,7 @@ export function CommentForm({ threadId, parentId = null, onCommentAdded }: Comme
             <FormItem>
               <FormControl>
                 <Textarea
-                  placeholder={parentId ? "Write a reply..." : "What are your thoughts?"}
+                  placeholder={parentId ? t('commentForm.replyPlaceholder', "Write a reply...") : t('commentForm.commentPlaceholder', "What are your thoughts?")}
                   {...field}
                   rows={parentId ? 3 : 4}
                   className="text-sm"
@@ -88,10 +108,14 @@ export function CommentForm({ threadId, parentId = null, onCommentAdded }: Comme
         />
         <div className="flex justify-end">
           <Button type="submit" size="sm" disabled={isSubmitting}>
-            {isSubmitting ? (parentId ? 'Replying...' : 'Commenting...') : (parentId ? 'Reply' : 'Comment')}
+            {isSubmitting 
+              ? (parentId ? t('commentForm.replyingButton', 'Replying...') : t('commentForm.commentingButton', 'Commenting...')) 
+              : (parentId ? t('commentForm.replyButton', 'Reply') : t('commentForm.commentButton', 'Comment'))}
           </Button>
         </div>
       </form>
     </Form>
   );
 }
+
+    

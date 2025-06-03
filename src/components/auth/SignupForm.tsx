@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -28,6 +29,7 @@ export function SignupForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,14 +53,20 @@ export function SignupForm() {
     setIsLoading(false);
 
     if (success) {
-      toast({ title: "Signup Successful", description: "Welcome to ForumVerse! You are now logged in." });
+      toast({ 
+        title: t('toast.signupSuccessTitle', "Signup Successful"), 
+        description: t('toast.signupSuccessDescription', "Welcome to ForumVerse! You are now logged in.") 
+      });
       router.push('/');
       router.refresh();
     } else {
-      toast({ title: "Signup Failed", description: "This email or username might already be in use or an error occurred.", variant: "destructive" });
-      form.setError("email", { type: "manual", message: " " }); // Clear previous field errors
+      toast({ 
+        title: t('toast.signupFailedTitle', "Signup Failed"), 
+        description: t('toast.signupFailedDescription', "This email or username might already be in use or an error occurred."), 
+        variant: "destructive" 
+      });
+      form.setError("email", { type: "manual", message: " " }); 
       form.setError("username", { type: "manual", message: "This email or username might already be in use." });
-
     }
   }
 
@@ -70,7 +78,7 @@ export function SignupForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{t('signupPage.emailLabel', 'Email')}</FormLabel>
               <FormControl>
                 <Input type="email" placeholder="you@example.com" {...field} disabled={isLoading} />
               </FormControl>
@@ -83,7 +91,7 @@ export function SignupForm() {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>{t('signupPage.usernameLabel', 'Username')}</FormLabel>
               <FormControl>
                 <Input placeholder="your_username" {...field} disabled={isLoading} />
               </FormControl>
@@ -96,7 +104,7 @@ export function SignupForm() {
           name="displayName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Display Name (Optional)</FormLabel>
+              <FormLabel>{t('signupPage.displayNameLabel', 'Display Name (Optional)')}</FormLabel>
               <FormControl>
                 <Input placeholder="Your Full Name" {...field} disabled={isLoading} />
               </FormControl>
@@ -109,7 +117,7 @@ export function SignupForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{t('signupPage.passwordLabel', 'Password')}</FormLabel>
               <FormControl>
                 <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
               </FormControl>
@@ -122,7 +130,7 @@ export function SignupForm() {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
+              <FormLabel>{t('signupPage.confirmPasswordLabel', 'Confirm Password')}</FormLabel>
               <FormControl>
                 <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
               </FormControl>
@@ -131,9 +139,11 @@ export function SignupForm() {
           )}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Signing up...' : 'Sign Up'}
+          {isLoading ? t('signupPage.signingUpButton', 'Signing up...') : t('signupPage.signupButton', 'Sign Up')}
         </Button>
       </form>
     </Form>
   );
 }
+
+    

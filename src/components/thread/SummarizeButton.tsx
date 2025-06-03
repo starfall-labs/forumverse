@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SummarizeButtonProps {
   threadContent: string;
@@ -28,21 +30,30 @@ export function SummarizeButton({ threadContent, threadTitle }: SummarizeButtonP
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleSummarize = async () => {
     if (!threadContent) {
-        toast({ title: "Cannot Summarize", description: "Thread content is empty.", variant: "destructive"});
+        toast({ 
+          title: t('toast.summarizeCannotSummarizeTitle', "Cannot Summarize"), 
+          description: t('toast.summarizeCannotSummarizeDescription', "Thread content is empty."), 
+          variant: "destructive"
+        });
         return;
     }
     setIsLoading(true);
-    setSummary(null); // Clear previous summary
+    setSummary(null); 
     try {
       const result = await summarizeThread({ threadContent });
       setSummary(result.summary);
-      setIsDialogOpen(true); // Open dialog once summary is ready
+      setIsDialogOpen(true); 
     } catch (error) {
       console.error('Error summarizing thread:', error);
-      toast({ title: "Summarization Failed", description: "Could not generate summary for this thread.", variant: "destructive"});
+      toast({ 
+        title: t('toast.summarizeFailedTitle', "Summarization Failed"), 
+        description: t('toast.summarizeFailedDescription', "Could not generate summary for this thread."), 
+        variant: "destructive"
+      });
       setSummary('Failed to generate summary.');
     } finally {
       setIsLoading(false);
@@ -53,29 +64,31 @@ export function SummarizeButton({ threadContent, threadTitle }: SummarizeButtonP
     <>
       <Button onClick={handleSummarize} disabled={isLoading} variant="outline" size="sm">
         <TextSearch className="mr-2 h-4 w-4" />
-        {isLoading ? 'Summarizing...' : 'Summarize Thread'}
+        {isLoading ? t('summarizeButton.buttonLoadingText', 'Summarizing...') : t('summarizeButton.buttonText', 'Summarize Thread')}
       </Button>
 
       <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <AlertDialogContent className="sm:max-w-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-headline">Summary of: {threadTitle}</AlertDialogTitle>
+            <AlertDialogTitle className="font-headline">{`${t('summarizeButton.dialogTitlePrefix', 'Summary of:')} ${threadTitle}`}</AlertDialogTitle>
             <AlertDialogDescription>
-              AI-generated summary of the key points:
+              {t('summarizeButton.dialogDescription', 'AI-generated summary of the key points:')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <ScrollArea className="max-h-[60vh] pr-4">
             {summary ? (
                 <p className="text-sm whitespace-pre-wrap">{summary}</p>
             ) : (
-                <p className="text-sm text-muted-foreground">Loading summary...</p>
+                <p className="text-sm text-muted-foreground">{t('summarizeButton.dialogLoadingSummary', 'Loading summary...')}</p>
             )}
           </ScrollArea>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setIsDialogOpen(false)}>Close</AlertDialogAction>
+            <AlertDialogAction onClick={() => setIsDialogOpen(false)}>{t('summarizeButton.dialogCloseButton', 'Close')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
   );
 }
+
+    
