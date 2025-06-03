@@ -3,9 +3,9 @@ import type { User, Thread, Comment } from './types';
 
 // Mock Users
 export const mockUsers: User[] = [
-  { id: 'user1', email: 'alice@example.com', username: 'alice', displayName: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png?text=A' },
-  { id: 'user2', email: 'bob@example.com', username: 'bob', displayName: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png?text=B' },
-  { id: 'user3', email: 'charlie@example.com', username: 'charlie', displayName: 'Charlie Brown', avatarUrl: 'https://placehold.co/40x40.png?text=C' },
+  { id: 'user1', email: 'alice@example.com', username: 'alice', displayName: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png?text=A', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString() }, // 30 days ago
+  { id: 'user2', email: 'bob@example.com', username: 'bob', displayName: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png?text=B', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString() }, // 60 days ago
+  { id: 'user3', email: 'charlie@example.com', username: 'charlie', displayName: 'Charlie Brown', avatarUrl: 'https://placehold.co/40x40.png?text=C', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString() }, // 5 days ago
 ];
 
 // Mock Comments
@@ -184,4 +184,9 @@ export const updateCommentVotes = async (threadId: string, commentId: string, ty
 
   findAndUpdateComment(thread.comments);
   return targetComment ? JSON.parse(JSON.stringify(targetComment)) : null;
+};
+
+export const getUserByUsername = async (username: string): Promise<User | undefined> => {
+  const user = mockUsers.find(u => u.username === username);
+  return user ? JSON.parse(JSON.stringify(user)) : undefined;
 };

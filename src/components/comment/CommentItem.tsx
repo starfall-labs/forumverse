@@ -12,6 +12,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { MessageSquareReply } from 'lucide-react';
 import { CommentForm } from './CommentForm';
 import { useTranslation } from '@/hooks/useTranslation';
+import Link from 'next/link';
 
 interface CommentItemProps {
   comment: CommentType;
@@ -52,7 +53,9 @@ export function CommentItem({ comment, threadId, depth = 0 }: CommentItemProps) 
         <div className={`flex-grow ${cardPaddingLeft} pr-2 py-2`}>
             <div className="flex items-center space-x-2 mb-1">
               <UserAvatar user={comment.author} className="h-5 w-5" />
-              <span className="text-xs font-medium">{primaryAuthorName} (u/{authorUsername})</span>
+              <Link href={`/u/${authorUsername}`} className="hover:underline">
+                <span className="text-xs font-medium">{primaryAuthorName} (u/{authorUsername})</span>
+              </Link>
               <span className="text-xs text-muted-foreground">•</span>
               <time dateTime={comment.createdAt} className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
@@ -87,5 +90,3 @@ export function CommentItem({ comment, threadId, depth = 0 }: CommentItemProps) 
     </Card>
   );
 }
-
-    

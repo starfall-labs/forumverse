@@ -40,7 +40,12 @@ export function ThreadItem({ thread }: ThreadItemProps) {
           <CardHeader className="pb-2 pt-4 px-4">
             <div className="text-xs text-muted-foreground flex items-center space-x-2">
               <UserAvatar user={thread.author} className="h-5 w-5" />
-              <span>{t('threadItem.postedBy', 'Posted by')} {primaryAuthorName} (u/{authorUsername})</span>
+              <span>
+                {t('threadItem.postedBy', 'Posted by')}{' '}
+                <Link href={`/u/${authorUsername}`} className="hover:underline text-foreground/90 font-medium">
+                  {primaryAuthorName} (u/{authorUsername})
+                </Link>
+              </span>
               <span>•</span>
               <time dateTime={thread.createdAt}>
                 {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}
@@ -68,5 +73,3 @@ export function ThreadItem({ thread }: ThreadItemProps) {
     </Card>
   );
 }
-
-    

@@ -33,6 +33,8 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'navbar.logout': 'Log out',
     'navbar.login': 'Login',
     'navbar.signup': 'Sign Up',
+    'navbar.myProfile': 'My Profile',
+
     'home.popularThreads': 'Popular Threads',
     'home.createThreadButton': 'Create New Thread',
     'home.loadingThreads': 'Loading threads...',
@@ -74,6 +76,8 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'notFoundPage.title': 'Page Not Found',
     'notFoundPage.description': "Oops! The page you're looking for doesn't seem to exist.",
     'notFoundPage.homeButton': 'Return Home',
+    'notFoundPage.userNotFoundTitle': 'User Not Found',
+    'notFoundPage.userNotFoundDescription': "Sorry, we couldn't find a user with that username.",
 
     'threadPage.commentsHeading': 'Comments',
 
@@ -97,6 +101,7 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     
     'threadItem.commentsLink': 'Comments',
     'threadItem.postedBy': 'Posted by',
+    'threadView.postedBy': 'Posted by', // Added for ThreadView
 
     'commentItem.replyButton': 'Reply',
 
@@ -121,6 +126,16 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'toast.summarizeCannotSummarizeDescription': 'Thread content is empty.',
     'toast.summarizeFailedTitle': 'Summarization Failed',
     'toast.summarizeFailedDescription': 'Could not generate summary for this thread.',
+
+    'userProfile.about': 'About',
+    'userProfile.memberSince': 'Member since:',
+    'userProfile.moreComingSoon': 'More profile information and activity will be displayed here in the future.',
+    'userProfile.postsBy': "Posts by",
+    'userProfile.commentsBy': "Comments by",
+    'userProfile.noPosts': "This user hasn't posted anything yet.",
+    'userProfile.noComments': "This user hasn't commented on anything yet.",
+
+
   },
   vi: {
     'navbar.createPost': 'Tạo Bài Viết',
@@ -129,6 +144,8 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'navbar.logout': 'Đăng xuất',
     'navbar.login': 'Đăng nhập',
     'navbar.signup': 'Đăng ký',
+    'navbar.myProfile': 'Hồ sơ của tôi',
+
     'home.popularThreads': 'Chủ đề Nổi bật',
     'home.createThreadButton': 'Tạo Chủ đề Mới',
     'home.loadingThreads': 'Đang tải chủ đề...',
@@ -168,8 +185,11 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'submitPage.loginPrompt': 'Vui lòng đăng nhập để tạo bài viết.',
 
     'notFoundPage.title': 'Không Tìm Thấy Trang',
-    'notFoundPage.description': 'Rất tiếc! Trang bạn đang tìm kiếm dường như không tồn tại.',
+    'notFoundPage.description': "Rất tiếc! Trang bạn đang tìm kiếm dường như không tồn tại.",
     'notFoundPage.homeButton': 'Quay Về Trang Chủ',
+    'notFoundPage.userNotFoundTitle': 'Không Tìm Thấy Người Dùng',
+    'notFoundPage.userNotFoundDescription': "Xin lỗi, chúng tôi không thể tìm thấy người dùng với tên đó.",
+
 
     'threadPage.commentsHeading': 'Bình luận',
 
@@ -193,6 +213,7 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
 
     'threadItem.commentsLink': 'Bình luận',
     'threadItem.postedBy': 'Đăng bởi',
+    'threadView.postedBy': 'Đăng bởi', // Added for ThreadView
 
     'commentItem.replyButton': 'Phản hồi',
 
@@ -217,6 +238,14 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'toast.summarizeCannotSummarizeDescription': 'Nội dung chủ đề trống.',
     'toast.summarizeFailedTitle': 'Tóm tắt thất bại',
     'toast.summarizeFailedDescription': 'Không thể tạo tóm tắt cho chủ đề này.',
+
+    'userProfile.about': 'Về',
+    'userProfile.memberSince': 'Thành viên từ:',
+    'userProfile.moreComingSoon': 'Thông tin hồ sơ và hoạt động khác sẽ được hiển thị ở đây trong tương lai.',
+    'userProfile.postsBy': "Bài viết của",
+    'userProfile.commentsBy': "Bình luận của",
+    'userProfile.noPosts': "Người dùng này chưa đăng bài nào.",
+    'userProfile.noComments': "Người dùng này chưa bình luận về bất cứ điều gì.",
   }
 };
 
@@ -255,7 +284,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, []);
 
   const getTranslation = useCallback((key: string, defaultText: string): string => {
-    if (isInitializing) return defaultText;
+    if (isInitializing) return defaultText; // Return default immediately if still initializing
     
     const langTranslations = translations[currentLanguage];
     if (langTranslations && langTranslations[key] !== undefined) {
@@ -263,14 +292,17 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
     // Fallback to English if key exists in English but not current language
     if (currentLanguage !== 'en' && translations.en && translations.en[key] !== undefined) {
+      // console.warn(`Translation missing for key '${key}' in language '${currentLanguage}'. Falling back to English.`);
       return translations.en[key];
     }
     // Fallback to default text if key doesn't exist in any language
+    // console.warn(`Translation missing for key '${key}' in language '${currentLanguage}'. Falling back to default text.`);
     return defaultText;
   }, [currentLanguage, translations, isInitializing]);
 
 
   if (isInitializing) {
+    // Render null or a loading spinner while language is being initialized to prevent flash of untranslated content
     return null; 
   }
 
@@ -280,5 +312,3 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     </LanguageContext.Provider>
   );
 };
-
-    

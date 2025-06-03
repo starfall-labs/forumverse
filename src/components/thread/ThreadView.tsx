@@ -6,12 +6,15 @@ import { UserAvatar } from '@/components/shared/UserAvatar';
 import { VoteButtons } from '@/components/shared/VoteButtons';
 import { voteThreadAction } from '@/actions/threadActions';
 import { formatDistanceToNow } from 'date-fns';
+import Link from 'next/link'; // Added
+import { useTranslation } from '@/hooks/useTranslation'; // Added
 
 interface ThreadViewProps {
   thread: Thread;
 }
 
 export function ThreadView({ thread }: ThreadViewProps) {
+  const { t } = useTranslation(); // Added
 
   const handleVote = async (itemId: string, type: 'upvote' | 'downvote') => {
     await voteThreadAction(itemId, type);
@@ -37,7 +40,12 @@ export function ThreadView({ thread }: ThreadViewProps) {
       <article className="p-6 flex-grow">
         <div className="mb-3 text-sm text-muted-foreground flex items-center space-x-2">
           <UserAvatar user={thread.author} className="h-6 w-6" />
-          <span>Posted by {primaryAuthorName} (u/{authorUsername})</span>
+          <span>
+            {t('threadView.postedBy', 'Posted by')}{' '}
+            <Link href={`/u/${authorUsername}`} className="hover:underline text-foreground/90 font-medium">
+                {primaryAuthorName} (u/{authorUsername})
+            </Link>
+          </span>
           <span>•</span>
           <time dateTime={thread.createdAt}>
             {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}

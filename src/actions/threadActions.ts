@@ -1,3 +1,4 @@
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -7,7 +8,8 @@ import {
   addThread as addThreadToMock, 
   addComment as addCommentToMock,
   updateThreadVotes as updateThreadVotesInMock,
-  updateCommentVotes as updateCommentVotesInMock
+  updateCommentVotes as updateCommentVotesInMock,
+  getUserByUsername as getUserByUsernameFromMock
 } from '@/lib/mock-data';
 import type { Thread, Comment, User } from '@/lib/types';
 
@@ -118,4 +120,9 @@ export async function getThreadsAction(): Promise<Thread[]> {
 export async function getThreadByIdAction(id: string): Promise<Thread | undefined> {
   const thread = (global.mockThreads || []).find((t: Thread) => t.id === id);
   return thread ? JSON.parse(JSON.stringify(thread)) : undefined;
+}
+
+export async function getUserByUsernameAction(username: string): Promise<User | undefined> {
+  const user = (global.mockUsers || []).find((u: User) => u.username === username);
+  return user ? JSON.parse(JSON.stringify(user)) : undefined;
 }

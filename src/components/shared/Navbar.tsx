@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
-import { LogIn, LogOut, PlusCircle, UserCircle2, Languages } from 'lucide-react';
+import { LogIn, LogOut, PlusCircle, UserCircle2, Languages, User as UserIcon } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,7 +41,7 @@ export function Navbar() {
 
   const getUserDisplayName = () => {
     if (!user) return '';
-    return user.displayName || user.username || user.email;
+    return user.displayName || user.username;
   }
 
   return (
@@ -101,13 +101,25 @@ export function Navbar() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{getUserDisplayName()}</p>
+                    <p className="text-sm font-medium leading-none">
+                      <Link href={`/u/${user.username}`} className="hover:underline">
+                        {getUserDisplayName()}
+                      </Link>
+                    </p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      u/{user.username}
+                       <Link href={`/u/${user.username}`} className="hover:underline">
+                        u/{user.username}
+                       </Link>
                     </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href={`/u/${user.username}`}>
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    <span>{t('navbar.myProfile', 'My Profile')}</span>
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>{t('navbar.logout', 'Log out')}</span>

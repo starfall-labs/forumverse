@@ -5,6 +5,7 @@ export type User = {
   username: string; // User-chosen, unique identifier
   displayName?: string; // Optional display name
   avatarUrl?: string;
+  createdAt?: string; // ISO date string, for member since
 };
 
 export type Comment = {

@@ -117,9 +117,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: `user${Date.now()}`,
       email: data.email,
       username: data.username,
-      displayName: data.displayName,
+      displayName: data.displayName || undefined, // Ensure it's undefined if empty
       password: data.password, // Store password for mock login
-      avatarUrl: `https://placehold.co/40x40.png?text=${(data.displayName || data.username || data.email).charAt(0).toUpperCase()}`
+      avatarUrl: `https://placehold.co/40x40.png?text=${(data.displayName || data.username || data.email).charAt(0).toUpperCase()}`,
+      createdAt: new Date().toISOString(),
     };
 
     saveStoredUsers([...storedUsers, newUser]);
