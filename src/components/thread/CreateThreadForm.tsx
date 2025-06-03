@@ -97,7 +97,7 @@ export function CreateThreadForm() {
             <FormItem>
               <FormLabel>{t('submitPage.contentLabel', 'Content')}</FormLabel>
               <FormControl>
-                <Textarea placeholder={t('submitPage.contentPlaceholder', 'Share your thoughts (Markdown not supported yet)')} {...field} rows={8} disabled={isSubmitting || !user} />
+                <Textarea placeholder={t('submitPage.contentPlaceholderMarkdown', 'Share your thoughts (Markdown supported!)')} {...field} rows={8} disabled={isSubmitting || !user} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -110,5 +110,3 @@ export function CreateThreadForm() {
     </Form>
   );
 }
-
-    

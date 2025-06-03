@@ -69,6 +69,7 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'submitPage.titlePlaceholder': 'Enter a descriptive title',
     'submitPage.contentLabel': 'Content',
     'submitPage.contentPlaceholder': 'Share your thoughts (Markdown not supported yet)',
+    'submitPage.contentPlaceholderMarkdown': 'Share your thoughts (Markdown supported!)',
     'submitPage.createButton': 'Create Post',
     'submitPage.submittingButton': 'Submitting...',
     'submitPage.loginPrompt': 'Please log in to create a post.',
@@ -101,7 +102,7 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     
     'threadItem.commentsLink': 'Comments',
     'threadItem.postedBy': 'Posted by',
-    'threadView.postedBy': 'Posted by', // Added for ThreadView
+    'threadView.postedBy': 'Posted by', 
 
     'commentItem.replyButton': 'Reply',
 
@@ -180,6 +181,7 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
     'submitPage.titlePlaceholder': 'Nhập tiêu đề mô tả',
     'submitPage.contentLabel': 'Nội dung',
     'submitPage.contentPlaceholder': 'Chia sẻ suy nghĩ của bạn (Chưa hỗ trợ Markdown)',
+    'submitPage.contentPlaceholderMarkdown': 'Chia sẻ suy nghĩ của bạn (Hỗ trợ Markdown!)',
     'submitPage.createButton': 'Tạo Bài Viết',
     'submitPage.submittingButton': 'Đang gửi...',
     'submitPage.loginPrompt': 'Vui lòng đăng nhập để tạo bài viết.',
@@ -213,7 +215,7 @@ const PREDEFINED_TRANSLATIONS: AllTranslations = {
 
     'threadItem.commentsLink': 'Bình luận',
     'threadItem.postedBy': 'Đăng bởi',
-    'threadView.postedBy': 'Đăng bởi', // Added for ThreadView
+    'threadView.postedBy': 'Đăng bởi', 
 
     'commentItem.replyButton': 'Phản hồi',
 
@@ -261,10 +263,12 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       if (storedLanguage && SUPPORTED_LANGUAGES.some(l => l.code === storedLanguage)) {
         setCurrentLanguageState(storedLanguage);
       } else {
+        // If no stored language or unsupported, default to English and store it.
         localStorage.setItem(CURRENT_LANGUAGE_KEY, 'en'); 
       }
     } catch (error) {
       console.error("Failed to load language settings from localStorage", error);
+      // If localStorage fails, still default to English for the session
     } finally {
       setIsInitializing(false);
     }
@@ -290,19 +294,16 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (langTranslations && langTranslations[key] !== undefined) {
       return langTranslations[key];
     }
-    // Fallback to English if key exists in English but not current language
+    
     if (currentLanguage !== 'en' && translations.en && translations.en[key] !== undefined) {
-      // console.warn(`Translation missing for key '${key}' in language '${currentLanguage}'. Falling back to English.`);
       return translations.en[key];
     }
-    // Fallback to default text if key doesn't exist in any language
-    // console.warn(`Translation missing for key '${key}' in language '${currentLanguage}'. Falling back to default text.`);
+    
     return defaultText;
   }, [currentLanguage, translations, isInitializing]);
 
 
   if (isInitializing) {
-    // Render null or a loading spinner while language is being initialized to prevent flash of untranslated content
     return null; 
   }
 
