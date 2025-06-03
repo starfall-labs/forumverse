@@ -5,7 +5,6 @@ import type { Notification, User } from '@/lib/types';
 import { NotificationType } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { UserAvatar } from '@/components/shared/UserAvatar';
 import { getUserByIdAction, markNotificationAsReadAction } from '@/actions/threadActions';
@@ -68,7 +67,7 @@ export function NotificationItem({ notification, currentUserId, onNotificationRe
     }
   };
   
-  const defaultText = notification.contentArgs?.defaultText || "Notification"; // Fallback for t()
+  const defaultText = notification.contentArgs?.defaultText || "Notification"; 
   const translatedContent = t(notification.contentKey, defaultText, notification.contentArgs);
 
   return (
@@ -106,3 +105,5 @@ export function NotificationItem({ notification, currentUserId, onNotificationRe
     </Card>
   );
 }
+
+    

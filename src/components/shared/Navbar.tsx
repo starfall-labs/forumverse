@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
-import { LogIn, LogOut, PlusCircle, UserCircle2, Languages, User as UserIcon, Bell } from 'lucide-react'; // Added Bell
+import { LogIn, LogOut, PlusCircle, UserCircle2, Languages, User as UserIcon, Bell } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,19 +16,19 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
-import { useContext, useEffect, useState } from 'react'; // Added useEffect, useState
+import { useContext, useEffect, useState } from 'react';
 import { LanguageContext, SUPPORTED_LANGUAGES } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
-import { getUnreadNotificationCountAction } from '@/actions/threadActions'; // Added
-import { usePathname } from 'next/navigation'; // Added
+import { getUnreadNotificationCountAction } from '@/actions/threadActions';
+import { usePathname } from 'next/navigation';
 
 export function Navbar() {
   const { user, logout, isLoading } = useAuth();
   const langContext = useContext(LanguageContext);
   const { t } = useTranslation();
-  const pathname = usePathname(); // Get current path
+  const pathname = usePathname(); 
 
-  const [unreadCount, setUnreadCount] = useState(0); // State for unread notifications
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     async function fetchUnreadCount() {
@@ -40,7 +40,6 @@ export function Navbar() {
       }
     }
     fetchUnreadCount();
-    // Re-fetch when user changes or when navigating to/from notifications page
   }, [user, pathname]);
 
 
@@ -177,3 +176,5 @@ export function Navbar() {
     </header>
   );
 }
+
+    

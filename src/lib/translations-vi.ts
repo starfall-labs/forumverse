@@ -2,11 +2,6 @@
 // src/lib/translations-vi.ts
 import type { PREDEFINED_TRANSLATIONS_EN as EnglishTranslations } from './translations-en';
 
-// It's good practice to have a type for the translation map based on English keys
-// to ensure all keys are considered for translation.
-// However, for simplicity, we'll use Record<string, string>
-// type VietnameseTranslations = Record<keyof typeof EnglishTranslations, string>;
-
 export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
   'navbar.createPost': 'Tạo Chủ đề',
   'navbar.changeLanguage': 'Thay đổi ngôn ngữ',
@@ -146,3 +141,5 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
 
 // Re-export EN translations from here too if LanguageContext imports from this file only
 export { PREDEFINED_TRANSLATIONS_EN } from './translations-en';
+
+    

@@ -27,8 +27,6 @@ function findUserById(userId: string): User | undefined {
 }
 
 // Helper function to create and store a notification
-// This function now generates English content directly for simplicity in server actions.
-// A more robust solution would involve a translation service or passing locale.
 function createMockNotification(
   recipientId: string,
   type: NotificationType,
@@ -36,11 +34,10 @@ function createMockNotification(
   entityId: string, // ID of the item being acted upon (thread, comment, or user being followed)
   entityType: NotificationEntityType,
   relatedEntityId?: string | null, // e.g., threadId if entityType is 'comment'
-  contentKey?: string, // Key for specific content generation logic
-  contentArgs?: Record<string, string> // Additional args for content generation
+  contentKey?: string, 
+  contentArgs?: Record<string, string>
 ): Notification | null {
-  if (actorId === recipientId && type !== NotificationType.USER_FOLLOWED_YOU) { // Avoid self-notification, except for "X followed you"
-    // For votes, if actorId is recipientId, it's a self-vote, don't notify.
+  if (actorId === recipientId && type !== NotificationType.USER_FOLLOWED_YOU) { 
     if (type === NotificationType.THREAD_UPVOTE || type === NotificationType.THREAD_DOWNVOTE ||
         type === NotificationType.COMMENT_UPVOTE || type === NotificationType.COMMENT_DOWNVOTE) {
       return null;
@@ -49,64 +46,38 @@ function createMockNotification(
 
   const actor = actorId ? findUserById(actorId) : null;
   const actorName = actor?.displayName || actor?.username || 'Someone';
-  let content = '';
   let link = '/';
 
   const threadForContent = entityType === 'thread' ? global.mockDataStore.threads.find(t => t.id === entityId) : 
                            (entityType === 'comment' && relatedEntityId) ? global.mockDataStore.threads.find(t => t.id === relatedEntityId) : null;
   const threadTitle = threadForContent?.title || 'a thread';
 
-  const commentForContent = entityType === 'comment' ? 
-    threadForContent?.comments.flatMap(c => [c, ...(c.replies || [])]).find(c => c.id === entityId) : null;
-  // const commentTextSnippet = commentForContent ? (commentForContent.content.substring(0, 30) + "...") : "a comment";
-
-
   switch (type) {
     case NotificationType.NEW_THREAD_FROM_FOLLOWED_USER:
-      content = `${actorName} posted a new thread: "${threadTitle}"`;
       link = `/t/${entityId}`;
       break;
     case NotificationType.NEW_COMMENT_ON_THREAD:
-      content = `${actorName} commented on your thread: "${threadTitle}"`;
       link = `/t/${relatedEntityId}#comment-${entityId}`;
       break;
     case NotificationType.NEW_REPLY_TO_COMMENT:
-      content = `${actorName} replied to your comment on "${threadTitle}"`;
       link = `/t/${relatedEntityId}#comment-${entityId}`;
       break;
     case NotificationType.USER_FOLLOWED_YOU:
-      content = `${actorName} started following you.`;
       link = `/u/${actor?.username}`;
       break;
     case NotificationType.THREAD_UPVOTE:
-      content = contentKey && PREDEFINED_TRANSLATIONS_EN[contentKey] ? 
-                PREDEFINED_TRANSLATIONS_EN[contentKey].replace('{actorName}', actorName).replace('{threadTitle}', threadTitle)
-                : `${actorName} upvoted your thread: "${threadTitle}"`;
-      link = `/t/${entityId}`;
-      break;
     case NotificationType.THREAD_DOWNVOTE:
-       content = contentKey && PREDEFINED_TRANSLATIONS_EN[contentKey] ? 
-                PREDEFINED_TRANSLATIONS_EN[contentKey].replace('{actorName}', actorName).replace('{threadTitle}', threadTitle)
-                : `${actorName} downvoted your thread: "${threadTitle}"`;
       link = `/t/${entityId}`;
       break;
     case NotificationType.COMMENT_UPVOTE:
-      content = contentKey && PREDEFINED_TRANSLATIONS_EN[contentKey] ? 
-                PREDEFINED_TRANSLATIONS_EN[contentKey].replace('{actorName}', actorName).replace('{threadTitle}', threadTitle)
-                : `${actorName} upvoted your comment on thread: "${threadTitle}"`;
-      link = `/t/${relatedEntityId}#comment-${entityId}`;
-      break;
     case NotificationType.COMMENT_DOWNVOTE:
-      content = contentKey && PREDEFINED_TRANSLATIONS_EN[contentKey] ? 
-                PREDEFINED_TRANSLATIONS_EN[contentKey].replace('{actorName}', actorName).replace('{threadTitle}', threadTitle)
-                : `${actorName} downvoted your comment on thread: "${threadTitle}"`;
       link = `/t/${relatedEntityId}#comment-${entityId}`;
       break;
     default:
-      return null; // Unknown notification type
+      return null; 
   }
   
-  const finalContentKey = contentKey || `notification.default.${type}`; // Fallback content key
+  const finalContentKey = contentKey || `notification.default.${type}`; 
   const finalContentArgs = contentArgs || { actorName, itemTitle: entityType === 'thread' ? threadTitle : (entityType === 'comment' ? "your comment" : "you") };
 
 
@@ -126,8 +97,8 @@ function createMockNotification(
   };
 
   global.mockDataStore.notifications.unshift(newNotification);
-  revalidatePath('/notifications'); // Revalidate notifications page
-  // Consider revalidating Navbar if it shows unread count directly from an action
+  revalidatePath('/notifications'); 
+  revalidatePath('/api/unread-notifications'); // For potential API endpoint if Navbar fetches directly
   return newNotification;
 }
 
@@ -159,7 +130,6 @@ export async function createThreadAction(formData: FormData, authorEmail: string
 
   global.mockDataStore.threads.unshift(newThread);
 
-  // Notify followers
   author.followerIds?.forEach(followerId => {
     createMockNotification(
       followerId,
@@ -229,7 +199,6 @@ export async function addCommentAction(threadId: string, formData: FormData, aut
   }
   thread.commentCount +=1;
   
-  // Notify thread author (if not the commenter)
   if (thread.author.id !== author.id) {
     createMockNotification(
       thread.author.id,
@@ -243,7 +212,6 @@ export async function addCommentAction(threadId: string, formData: FormData, aut
     );
   }
 
-  // Notify parent comment author (if it's a reply and not self-reply)
   if (parentId && parentCommentAuthorId && parentCommentAuthorId !== author.id) {
     createMockNotification(
       parentCommentAuthorId,
@@ -320,7 +288,7 @@ export async function voteCommentAction(threadId: string, commentId: string, typ
         voterId,
         targetComment.id,
         'comment',
-        thread.id, // relatedEntityId is the threadId
+        thread.id, 
         type === 'upvote' ? 'notification.commentUpvoted' : 'notification.commentDownvoted',
         { actorName: voter?.displayName || voter?.username || "Someone", threadTitle: thread.title }
       );
@@ -377,7 +345,7 @@ export async function followUserAction(targetUserId: string, currentUserId: stri
     targetUserId,
     NotificationType.USER_FOLLOWED_YOU,
     currentUserId,
-    currentUserId, // Entity is the user who followed
+    currentUserId, 
     'user',
     null,
     'notification.userFollowedYou',
@@ -431,3 +399,5 @@ export async function markAllNotificationsAsReadAction(userId: string): Promise<
   });
   revalidatePath('/notifications');
 }
+
+    
