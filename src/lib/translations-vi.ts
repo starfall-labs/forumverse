@@ -83,6 +83,8 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
 
   'commentItem.replyButton': 'Phản hồi',
 
+  'toast.successTitle': 'Thành công',
+  'toast.errorTitle': 'Lỗi',
   'toast.loginSuccessTitle': 'Đăng nhập thành công',
   'toast.loginSuccessDescription': 'Chào mừng bạn trở lại!',
   'toast.loginFailedTitle': 'Đăng nhập thất bại',
@@ -108,6 +110,12 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
   'toast.unfollowSuccess': 'Đã bỏ theo dõi {targetUsername}.',
   'toast.followError': 'Không thể theo dõi {targetUsername}.',
   'toast.unfollowError': 'Không thể bỏ theo dõi {targetUsername}.',
+  'toast.admin.errorFetchingData': 'Không thể tải dữ liệu admin.',
+  'toast.admin.userMadeAdmin': 'Người dùng đã trở thành admin.',
+  'toast.admin.userRemovedAdmin': 'Người dùng không còn là admin.',
+  'toast.admin.errorUpdatingAdminStatus': 'Không thể cập nhật trạng thái admin.',
+  'toast.admin.userDeleted': 'Người dùng đã bị xóa.',
+  'toast.admin.errorDeletingUser': 'Không thể xóa người dùng.',
 
   'userProfile.about': 'Về',
   'userProfile.memberSince': 'Thành viên từ:',
@@ -153,7 +161,16 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
   'adminPage.usersTable.role': 'Vai trò',
   'adminPage.usersTable.adminRole': 'Admin',
   'adminPage.usersTable.userRole': 'Người dùng',
+  'adminPage.usersTable.actions': 'Hành động',
+  'adminPage.usersTable.makeAdminButton': 'Cấp quyền Admin',
+  'adminPage.usersTable.makeAdminButtonShort': 'Cấp quyền',
+  'adminPage.usersTable.removeAdminButton': 'Gỡ quyền Admin',
+  'adminPage.usersTable.removeAdminButtonShort': 'Gỡ quyền',
+  'adminPage.usersTable.deleteUserButton': 'Xóa Người dùng',
+  'adminPage.usersTable.deleteUserButtonShort': 'Xóa',
   'adminPage.usersTable.noUsers': 'Không tìm thấy người dùng nào.',
+  'adminPage.usersTable.cannotRemoveLastAdminTooltip': 'Không thể gỡ quyền admin cuối cùng.',
+  'adminPage.usersTable.cannotDeleteSelfTooltip': 'Không thể tự xóa chính mình.',
   'adminPage.threadsTable.title': 'Tất cả Chủ đề',
   'adminPage.threadsTable.description': 'Tổng quan về tất cả các chủ đề đã tạo.',
   'adminPage.threadsTable.titleHeader': 'Tiêu đề',
@@ -162,6 +179,17 @@ export const PREDEFINED_TRANSLATIONS_VI: Record<string, string> = {
   'adminPage.threadsTable.comments': 'Bình luận',
   'adminPage.threadsTable.score': 'Điểm',
   'adminPage.threadsTable.noThreads': 'Không tìm thấy chủ đề nào.',
+  'adminPage.threadsTable.deletedUser': 'Đã xóa',
+
+  'adminPage.dialog.makeAdminTitle': 'Xác nhận Cấp quyền Admin',
+  'adminPage.dialog.makeAdminDescription': 'Bạn có chắc muốn cấp quyền admin cho {targetUsername} không?',
+  'adminPage.dialog.removeAdminTitle': 'Xác nhận Gỡ quyền Admin',
+  'adminPage.dialog.removeAdminDescription': 'Bạn có chắc muốn gỡ quyền admin của {targetUsername} không?',
+  'adminPage.dialog.deleteUserTitle': 'Xác nhận Xóa Người dùng',
+  'adminPage.dialog.deleteUserDescription': 'Bạn có chắc muốn xóa người dùng {targetUsername} không? Hành động này không thể hoàn tác.',
+  'adminPage.dialog.cancelButton': 'Hủy',
+  'adminPage.dialog.confirmButton': 'Xác nhận',
+  'adminPage.dialog.confirmDeleteButton': 'Xóa',
 };
 
 // Re-export EN translations from here too if LanguageContext imports from this file only

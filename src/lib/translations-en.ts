@@ -81,6 +81,8 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
 
   'commentItem.replyButton': 'Reply',
 
+  'toast.successTitle': 'Success',
+  'toast.errorTitle': 'Error',
   'toast.loginSuccessTitle': 'Login Successful',
   'toast.loginSuccessDescription': 'Welcome back!',
   'toast.loginFailedTitle': 'Login Failed',
@@ -106,6 +108,13 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'toast.unfollowSuccess': '{targetUsername} unfollowed.',
   'toast.followError': 'Could not follow {targetUsername}.',
   'toast.unfollowError': 'Could not unfollow {targetUsername}.',
+  'toast.admin.errorFetchingData': 'Could not fetch admin data.',
+  'toast.admin.userMadeAdmin': 'User is now an admin.',
+  'toast.admin.userRemovedAdmin': 'User is no longer an admin.',
+  'toast.admin.errorUpdatingAdminStatus': 'Could not update admin status.',
+  'toast.admin.userDeleted': 'User has been deleted.',
+  'toast.admin.errorDeletingUser': 'Could not delete user.',
+
 
   'userProfile.about': 'About',
   'userProfile.memberSince': 'Member since:',
@@ -151,7 +160,16 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'adminPage.usersTable.role': 'Role',
   'adminPage.usersTable.adminRole': 'Admin',
   'adminPage.usersTable.userRole': 'User',
+  'adminPage.usersTable.actions': 'Actions',
+  'adminPage.usersTable.makeAdminButton': 'Make Admin',
+  'adminPage.usersTable.makeAdminButtonShort': 'Promote',
+  'adminPage.usersTable.removeAdminButton': 'Remove Admin',
+  'adminPage.usersTable.removeAdminButtonShort': 'Demote',
+  'adminPage.usersTable.deleteUserButton': 'Delete User',
+  'adminPage.usersTable.deleteUserButtonShort': 'Delete',
   'adminPage.usersTable.noUsers': 'No users found.',
+  'adminPage.usersTable.cannotRemoveLastAdminTooltip': 'Cannot remove the last admin.',
+  'adminPage.usersTable.cannotDeleteSelfTooltip': 'Cannot delete yourself.',
   'adminPage.threadsTable.title': 'All Threads',
   'adminPage.threadsTable.description': 'Overview of all created threads.',
   'adminPage.threadsTable.titleHeader': 'Title',
@@ -160,4 +178,16 @@ export const PREDEFINED_TRANSLATIONS_EN: Record<string, string> = {
   'adminPage.threadsTable.comments': 'Comments',
   'adminPage.threadsTable.score': 'Score',
   'adminPage.threadsTable.noThreads': 'No threads found.',
+  'adminPage.threadsTable.deletedUser': 'Deleted',
+
+  'adminPage.dialog.makeAdminTitle': 'Confirm Make Admin',
+  'adminPage.dialog.makeAdminDescription': 'Are you sure you want to make {targetUsername} an admin?',
+  'adminPage.dialog.removeAdminTitle': 'Confirm Remove Admin',
+  'adminPage.dialog.removeAdminDescription': 'Are you sure you want to remove admin privileges from {targetUsername}?',
+  'adminPage.dialog.deleteUserTitle': 'Confirm Delete User',
+  'adminPage.dialog.deleteUserDescription': 'Are you sure you want to delete user {targetUsername}? This action cannot be undone.',
+  'adminPage.dialog.cancelButton': 'Cancel',
+  'adminPage.dialog.confirmButton': 'Confirm',
+  'adminPage.dialog.confirmDeleteButton': 'Delete',
+
 };

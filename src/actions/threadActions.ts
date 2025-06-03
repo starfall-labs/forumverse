@@ -6,6 +6,19 @@ import { initialMockThreads, initialMockUsers } from '@/lib/mock-data';
 import type { Thread, Comment, User, Notification, NotificationType, NotificationEntityType } from '@/lib/types';
 import { PREDEFINED_TRANSLATIONS_EN } from '@/lib/translations-en'; // For generating default content
 
+const DELETED_USER_PLACEHOLDER: User = {
+  id: 'deleted_user_placeholder',
+  username: 'deleted_user',
+  displayName: 'Deleted User',
+  email: 'deleted@example.com',
+  avatarUrl: 'https://placehold.co/40x40.png?text=X',
+  createdAt: new Date(0).toISOString(), // Epoch time
+  isAdmin: false,
+  followerIds: [],
+  followingIds: [],
+};
+
+
 // Initialize global mock data store if it doesn't exist.
 if (typeof global.mockDataStore === 'undefined') {
   const initialUsersWithFollowAndAdmin = initialMockUsers.map(u => ({
@@ -99,7 +112,7 @@ function createMockNotification(
 
   global.mockDataStore.notifications.unshift(newNotification);
   revalidatePath('/notifications'); 
-  revalidatePath('/api/unread-notifications'); // For potential API endpoint if Navbar fetches directly
+  revalidatePath('/api/unread-notifications'); 
   return newNotification;
 }
 
@@ -140,7 +153,7 @@ export async function createThreadAction(formData: FormData, authorEmail: string
       'thread',
       null,
       'notification.newThreadFromFollowedUser',
-      { actorName: author.displayName || author.username, threadTitle: newThread.title}
+      { actorName: author.displayName || author.username || 'Someone', threadTitle: newThread.title}
     );
   });
 
@@ -209,11 +222,11 @@ export async function addCommentAction(threadId: string, formData: FormData, aut
       'comment',
       thread.id,
       'notification.newCommentOnThread',
-      { actorName: author.displayName || author.username, threadTitle: thread.title }
+      { actorName: author.displayName || author.username || 'Someone', threadTitle: thread.title }
     );
   }
 
-  if (parentId && parentCommentAuthorId && parentCommentAuthorId !== author.id) {
+  if (parentId && parentCommentAuthorId && parentCommentAuthorId !== author.id && parentCommentAuthorId !== DELETED_USER_PLACEHOLDER.id) {
     createMockNotification(
       parentCommentAuthorId,
       NotificationType.NEW_REPLY_TO_COMMENT,
@@ -222,7 +235,7 @@ export async function addCommentAction(threadId: string, formData: FormData, aut
       'comment',
       thread.id,
       'notification.newReplyToComment',
-      { actorName: author.displayName || author.username, threadTitle: thread.title }
+      { actorName: author.displayName || author.username || 'Someone', threadTitle: thread.title }
     );
   }
   
@@ -239,7 +252,7 @@ export async function voteThreadAction(threadId: string, type: 'upvote' | 'downv
       thread.downvotes += 1;
     }
 
-    if (voterId && thread.author.id !== voterId) {
+    if (voterId && thread.author.id !== voterId && thread.author.id !== DELETED_USER_PLACEHOLDER.id) {
       const voter = findUserById(voterId);
       createMockNotification(
         thread.author.id,
@@ -281,7 +294,7 @@ export async function voteCommentAction(threadId: string, commentId: string, typ
       targetComment.downvotes += 1;
     }
 
-    if (voterId && targetComment.author.id !== voterId) {
+    if (voterId && targetComment.author.id !== voterId && targetComment.author.id !== DELETED_USER_PLACEHOLDER.id) {
       const voter = findUserById(voterId);
       createMockNotification(
         targetComment.author.id,
@@ -334,6 +347,9 @@ export async function followUserAction(targetUserId: string, currentUserId: stri
   if (!targetUser || !currentUser) {
     return { success: false, error: 'User not found.' };
   }
+  if (targetUser.id === DELETED_USER_PLACEHOLDER.id) {
+    return { success: false, error: 'Cannot follow this user.' };
+  }
 
   if (currentUser.followingIds?.includes(targetUserId)) {
     return { success: false, error: 'Already following this user.' };
@@ -350,7 +366,7 @@ export async function followUserAction(targetUserId: string, currentUserId: stri
     'user',
     null,
     'notification.userFollowedYou',
-    { actorName: currentUser.displayName || currentUser.username }
+    { actorName: currentUser.displayName || currentUser.username || 'Someone' }
   );
   
   revalidatePath(`/u/${targetUser.username}`);
@@ -390,6 +406,7 @@ export async function markNotificationAsReadAction(notificationId: string, userI
     notification.isRead = true;
   }
   revalidatePath('/notifications');
+  revalidatePath('/api/unread-notifications'); 
 }
 
 export async function markAllNotificationsAsReadAction(userId: string): Promise<void> {
@@ -399,10 +416,110 @@ export async function markAllNotificationsAsReadAction(userId: string): Promise<
     }
   });
   revalidatePath('/notifications');
+  revalidatePath('/api/unread-notifications'); 
 }
 
 // Admin Actions
 export async function getAllUsersForAdminAction(): Promise<User[]> {
-  // In a real app, this would have an authorization check
-  return JSON.parse(JSON.stringify(global.mockDataStore.users || []));
+  return JSON.parse(JSON.stringify(global.mockDataStore.users.filter(u => u.id !== DELETED_USER_PLACEHOLDER.id) || []));
+}
+
+export async function setUserAdminStatusAction(targetUserId: string, makeAdmin: boolean, currentAdminId: string): Promise<{ success: boolean, error?: string }> {
+  const currentAdmin = findUserById(currentAdminId);
+  if (!currentAdmin || !currentAdmin.isAdmin) {
+    return { success: false, error: 'Unauthorized: Only admins can perform this action.' };
+  }
+
+  const targetUser = findUserById(targetUserId);
+  if (!targetUser) {
+    return { success: false, error: 'Target user not found.' };
+  }
+  
+  if (targetUser.id === currentAdminId && !makeAdmin) {
+     const adminCount = global.mockDataStore.users.filter(u => u.isAdmin).length;
+     if (adminCount <= 1) {
+        return { success: false, error: 'Cannot remove the last admin.' };
+     }
+  }
+
+
+  targetUser.isAdmin = makeAdmin;
+  
+  // Update user in global store
+  const userIndex = global.mockDataStore.users.findIndex(u => u.id === targetUserId);
+  if (userIndex !== -1) {
+    global.mockDataStore.users[userIndex] = targetUser;
+  }
+
+  revalidatePath('/admin');
+  revalidatePath(`/u/${targetUser.username}`);
+  return { success: true };
+}
+
+export async function deleteUserAction(targetUserId: string, currentAdminId: string): Promise<{ success: boolean, error?: string }> {
+  const currentAdmin = findUserById(currentAdminId);
+  if (!currentAdmin || !currentAdmin.isAdmin) {
+    return { success: false, error: 'Unauthorized: Only admins can perform this action.' };
+  }
+
+  if (targetUserId === currentAdminId) {
+    return { success: false, error: 'Admin cannot delete themselves.' };
+  }
+  
+  const targetUserIndex = global.mockDataStore.users.findIndex(u => u.id === targetUserId);
+  if (targetUserIndex === -1) {
+    return { success: false, error: 'Target user not found.' };
+  }
+  const targetUser = global.mockDataStore.users[targetUserIndex];
+
+  // Remove user from main list
+  global.mockDataStore.users.splice(targetUserIndex, 1);
+
+  // Update author of threads
+  global.mockDataStore.threads.forEach(thread => {
+    if (thread.author.id === targetUserId) {
+      thread.author = { ...DELETED_USER_PLACEHOLDER };
+    }
+    // Update author of comments and replies
+    const updateCommentAuthors = (comments: Comment[]) => {
+      comments.forEach(comment => {
+        if (comment.author.id === targetUserId) {
+          comment.author = { ...DELETED_USER_PLACEHOLDER };
+        }
+        if (comment.replies) {
+          updateCommentAuthors(comment.replies);
+        }
+      });
+    };
+    updateCommentAuthors(thread.comments);
+  });
+
+  // Remove from follower/following lists
+  global.mockDataStore.users.forEach(user => {
+    user.followerIds = user.followerIds?.filter(id => id !== targetUserId);
+    user.followingIds = user.followingIds?.filter(id => id !== targetUserId);
+  });
+
+  // Clean up notifications
+  global.mockDataStore.notifications = global.mockDataStore.notifications.filter(
+    notif => notif.userId !== targetUserId && notif.actorId !== targetUserId
+  );
+  // Potentially update notifications where entityId is the user
+  global.mockDataStore.notifications.forEach(notif => {
+    if (notif.entityType === 'user' && notif.entityId === targetUserId) {
+      // For now, let's just remove these, or you could update the content to say "a deleted user"
+      notif.actorId = DELETED_USER_PLACEHOLDER.id; 
+      // Or remove them: global.mockDataStore.notifications = global.mockDataStore.notifications.filter(n => n.id !== notif.id);
+    }
+  });
+
+
+  revalidatePath('/admin');
+  revalidatePath('/'); // Revalidate home as threads might have changed authors
+  // Revalidate user profiles if they were following/followed by the deleted user
+  global.mockDataStore.users.forEach(u => revalidatePath(`/u/${u.username}`));
+  // Revalidate thread pages as comments/thread author might have changed
+  global.mockDataStore.threads.forEach(t => revalidatePath(`/t/${t.id}`));
+
+  return { success: true };
 }
