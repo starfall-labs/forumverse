@@ -13,7 +13,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/scripts/migrate.ts",
     "db:seed": "tsx src/scripts/seed.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:clear": "tsx src/scripts/clear.ts",
+    "db:studio": "drizzle-kit studio",
+    "db:reset": "npm run db:clear && npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.8.0",
